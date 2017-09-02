@@ -13,7 +13,7 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 CC_LIB := -I/usr/local/include
 CFLAGS := -g $(CC_LIB)
 
-LIB := -L/usr/local/lib -lcrypto -Bstatic -lsodium
+LIB := -L/usr/local/lib -lcrypto -Bstatic -lsodium -lleveldb
 INC := -I include
 
 $(TARGET): $(OBJECTS)

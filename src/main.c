@@ -5,13 +5,15 @@
 
 #include "main.h"
 #include "block.h"
+#include "wallet.h"
 
 enum command {
   CMD_NONE,
   CMD_HELP,
   CMD_VERSION,
   CMD_HASH,
-  CMD_BLOCK
+  CMD_BLOCK,
+  CMD_NEW_WALLET
 };
 
 static struct opal_command commands[] = {
@@ -19,7 +21,8 @@ static struct opal_command commands[] = {
   {"help", CMD_HELP},
   {"version", CMD_VERSION},
   {"hash", CMD_HASH},
-  {"block", CMD_BLOCK}
+  {"block", CMD_BLOCK},
+  {"new_wallet", CMD_NEW_WALLET}
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -73,6 +76,10 @@ int main(int argc, char **argv) {
         printf("Block Hash: %s\n", digest);
 
         free_block(block);
+        break;
+      }
+      case CMD_NEW_WALLET: {
+        new_wallet();
         break;
       }
       default: {

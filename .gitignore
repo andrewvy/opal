@@ -1,7 +1,7 @@
-# Bin
 bin/
 build/
 deps/
+wallet/
 
 # Prerequisites
 *.d

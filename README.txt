@@ -7,6 +7,7 @@ Dependencies
 ------------
 
 - libsodium
+- leveldb
 
 License (MIT)
 ------------
