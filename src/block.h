@@ -4,21 +4,20 @@
 #include <stdint.h>
 
 struct InputTransaction {
-  int8_t transaction[64];
-  uint32_t index;
+  uint8_t transaction[32];
   uint32_t amount;
 
-  int8_t address[64];
-  int8_t signature[64];
+  uint8_t address[32];
+  uint8_t signature[32];
 };
 
 struct OutputTransaction {
   uint32_t amount;
-  int8_t address[64];
+  uint8_t address[32];
 };
 
 struct Transaction {
-  int8_t id[64];
+  uint8_t id[32];
   uint8_t input_transaction_count;
   uint8_t output_transaction_count;
   struct InputTransaction **input_transactions;
@@ -26,11 +25,14 @@ struct Transaction {
 };
 
 struct Block {
-  uint32_t index;
-  int8_t previous_hash[64];
-  int8_t hash[64];
+  uint8_t version;
+
+  uint8_t previous_hash[32];
+  uint8_t hash[32];
+
   uint32_t epoch_timestamp;
   uint32_t nonce;
+
   uint32_t transaction_count;
   struct Transaction **transactions;
 };
@@ -38,5 +40,7 @@ struct Block {
 struct Block *make_block();
 
 int free_block(struct Block *block);
+
+int hash_block(struct Block *block);
 
 #endif

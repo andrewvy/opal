@@ -59,9 +59,19 @@ int main(int argc, char **argv) {
         break;
       }
       case CMD_BLOCK: {
+        char digest[(SHA256_DIGEST_LENGTH * 2) + 1];
+
         struct Block *block = make_block();
-        printf("Block Index: %u\n", block->index);
+        hash_block(block);
+
+        for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+          sprintf(&digest[i*2], "%02x", (unsigned int) block->hash[i]);
+        }
+
+        printf("Block Hash: %s\n", digest);
+
         free_block(block);
+        break;
       }
       default: {
         fprintf(stderr, "No options passed.\n");
