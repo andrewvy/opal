@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include <getopt.h>
 #include <string.h>
 #include <sodium.h>
@@ -12,7 +13,7 @@ enum command {
   CMD_HELP,
   CMD_VERSION,
   CMD_HASH,
-  CMD_BLOCK,
+  CMD_GENESIS,
   CMD_NEW_WALLET,
   CMD_READ_WALLET
 };
@@ -22,7 +23,7 @@ static struct opal_command commands[] = {
   {"help", CMD_HELP},
   {"version", CMD_VERSION},
   {"hash", CMD_HASH},
-  {"block", CMD_BLOCK},
+  {"genesis", CMD_GENESIS},
   {"new_wallet", CMD_NEW_WALLET},
   {"wallet", CMD_READ_WALLET}
 };
@@ -65,17 +66,25 @@ int main(int argc, char **argv) {
         printf("SHA256 Digest: %s\n", digest);
         break;
       }
-      case CMD_BLOCK: {
-        char digest[(crypto_hash_sha256_BYTES * 2) + 1];
-
+      case CMD_GENESIS: {
         struct Block *block = make_block();
+        block->timestamp = genesis_block.timestamp;
         hash_block(block);
 
-        for (int i = 0; i < crypto_hash_sha256_BYTES; i++) {
-          sprintf(&digest[i*2], "%02x", (unsigned int) block->hash[i]);
+        int i = 0;
+        while (!valid_block_hash(block)) {
+          block->nonce = i;
+          hash_block(block);
+          i++;
         }
 
-        printf("Block Hash: %s\n", digest);
+        if (compare_with_genesis_block(block) == 0) {
+          printf("Verified genesis block!\n");
+          print_block(block);
+        } else {
+          fprintf(stderr, "Genesis block mismatch! Generated a hash that is different than recorded.\n");
+          print_block(block);
+        }
 
         free_block(block);
         break;
