@@ -146,11 +146,11 @@ int read_wallet() {
   printf("Address: %s\n", address_digest);
 
   switch(get_address_id((uint8_t *) address)) {
-    case 1: {
+    case PROD_NET_ADDRESS_ID: {
       printf("Address Type: PROD_NET\n");
       break;
     }
-    case 3: {
+    case TEST_NET_ADDRESS_ID: {
       printf("Address Type: TEST_NET\n");
       break;
     }
