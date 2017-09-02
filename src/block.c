@@ -1,10 +1,9 @@
-#include "block.h"
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sodium.h>
 
-#include <openssl/sha.h>
+#include "block.h"
 
 #define BLOCK_VERSION 0x01
 
@@ -48,10 +47,7 @@ int hash_block(struct Block *block) {
 
   // 0x010000000000000000000000000000000000
 
-  SHA256_CTX ctx;
-  SHA256_Init(&ctx);
-  SHA256_Update(&ctx, to_hash, 32 + 1 + 1);
-  SHA256_Final(block->hash, &ctx);
+  crypto_hash_sha256(block->hash, to_hash, 32 + 1 +1);
 
   return 0;
 }

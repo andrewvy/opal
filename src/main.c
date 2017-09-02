@@ -1,11 +1,10 @@
-#include "main.h"
-#include "block.h"
-
 #include <stdio.h>
 #include <getopt.h>
 #include <string.h>
+#include <sodium.h>
 
-#include <openssl/sha.h>
+#include "main.h"
+#include "block.h"
 
 enum command {
   CMD_NONE,
@@ -25,20 +24,21 @@ static struct opal_command commands[] = {
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
 
-void make_hash(char *digest, char *string) {
-  unsigned char hash[SHA256_DIGEST_LENGTH];
+void make_hash(char *digest, unsigned char *string) {
+  unsigned char hash[crypto_hash_sha256_BYTES];
 
-  SHA256_CTX ctx;
-  SHA256_Init(&ctx);
-  SHA256_Update(&ctx, string, strlen(string));
-  SHA256_Final(hash, &ctx);
+  crypto_hash_sha256(hash, string, strlen((char *) string));
 
-  for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+  for (int i = 0; i < crypto_hash_sha256_BYTES; i++) {
     sprintf(&digest[i*2], "%02x", (unsigned int) hash[i]);
   }
 }
 
 int main(int argc, char **argv) {
+  if (sodium_init() == -1) {
+    return 1;
+  }
+
   if (argc > 1) {
     switch(command(argv[1])) {
       case CMD_NONE: {
@@ -53,18 +53,20 @@ int main(int argc, char **argv) {
         break;
       }
       case CMD_HASH: {
-        char digest[(SHA256_DIGEST_LENGTH * 2) + 1];
-        make_hash(digest, "Hello");
+        char digest[(crypto_hash_sha256_BYTES * 2) + 1];
+        unsigned char message[] = "Hello";
+
+        make_hash(digest, message);
         printf("SHA256 Digest: %s\n", digest);
         break;
       }
       case CMD_BLOCK: {
-        char digest[(SHA256_DIGEST_LENGTH * 2) + 1];
+        char digest[(crypto_hash_sha256_BYTES * 2) + 1];
 
         struct Block *block = make_block();
         hash_block(block);
 
-        for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        for (int i = 0; i < crypto_hash_sha256_BYTES; i++) {
           sprintf(&digest[i*2], "%02x", (unsigned int) block->hash[i]);
         }
 

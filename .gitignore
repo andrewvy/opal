@@ -1,6 +1,7 @@
 # Bin
 bin/
 build/
+deps/
 
 # Prerequisites
 *.d
