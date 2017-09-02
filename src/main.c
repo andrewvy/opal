@@ -1,4 +1,5 @@
 #include "main.h"
+#include "block.h"
 
 #include <stdio.h>
 #include <getopt.h>
@@ -10,14 +11,16 @@ enum command {
   CMD_NONE,
   CMD_HELP,
   CMD_VERSION,
-  CMD_HASH
+  CMD_HASH,
+  CMD_BLOCK
 };
 
 static struct opal_command commands[] = {
   {"none", CMD_NONE},
   {"help", CMD_HELP},
   {"version", CMD_VERSION},
-  {"hash", CMD_HASH}
+  {"hash", CMD_HASH},
+  {"block", CMD_BLOCK}
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -54,6 +57,11 @@ int main(int argc, char **argv) {
         make_hash(digest, "Hello");
         printf("SHA256 Digest: %s\n", digest);
         break;
+      }
+      case CMD_BLOCK: {
+        struct Block *block = make_block();
+        printf("Block Index: %u\n", block->index);
+        free_block(block);
       }
       default: {
         fprintf(stderr, "No options passed.\n");
