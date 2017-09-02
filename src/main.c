@@ -13,7 +13,8 @@ enum command {
   CMD_VERSION,
   CMD_HASH,
   CMD_BLOCK,
-  CMD_NEW_WALLET
+  CMD_NEW_WALLET,
+  CMD_READ_WALLET
 };
 
 static struct opal_command commands[] = {
@@ -22,7 +23,8 @@ static struct opal_command commands[] = {
   {"version", CMD_VERSION},
   {"hash", CMD_HASH},
   {"block", CMD_BLOCK},
-  {"new_wallet", CMD_NEW_WALLET}
+  {"new_wallet", CMD_NEW_WALLET},
+  {"wallet", CMD_READ_WALLET}
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -80,6 +82,10 @@ int main(int argc, char **argv) {
       }
       case CMD_NEW_WALLET: {
         new_wallet();
+        break;
+      }
+      case CMD_READ_WALLET: {
+        read_wallet();
         break;
       }
       default: {

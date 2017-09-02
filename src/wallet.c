@@ -4,22 +4,26 @@
 
 #include "wallet.h"
 
+/*
+ * open_wallet()
+ * Opens a LevelDB instance for the wallet
+ */
+leveldb_t *open_wallet(char *err) {
+  leveldb_t *db;
+  leveldb_options_t *options = leveldb_options_create();
+  leveldb_options_set_create_if_missing(options, 1);
+
+  return leveldb_open(options, "wallet", &err);
+}
+
 int new_wallet() {
   // Open DB
 
-  leveldb_t *db;
-  leveldb_options_t *options;
-  leveldb_readoptions_t *roptions;
-  leveldb_writeoptions_t *woptions;
-
   char *err = NULL;
-
-  options = leveldb_options_create();
-  leveldb_options_set_create_if_missing(options, 1);
-  db = leveldb_open(options, "wallet", &err);
+  leveldb_t *db = open_wallet(err);
 
   if (err != NULL) {
-    fprintf(stderr, "Could not open wallet database\n");
+    fprintf(stderr, "Could not open wallet\n");
     return 1;
   }
 
@@ -29,7 +33,7 @@ int new_wallet() {
   // ----
 
   size_t read_len;
-  roptions = leveldb_readoptions_create();
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
   char *initialized = leveldb_get(db, roptions, "initialized", 11, &read_len, &err);
 
   if (initialized != NULL) {
@@ -53,12 +57,40 @@ int new_wallet() {
 
   // ---
 
-  woptions = leveldb_writeoptions_create();
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+
+  int pk_size = (crypto_sign_PUBLICKEYBYTES * 2) + 1;
+  char pk_digest[pk_size];
+  for (int i = 0; i < crypto_sign_PUBLICKEYBYTES; i++) {
+    sprintf(&pk_digest[i*2], "%02x", (unsigned int) pk[i]);
+  }
+
+
+  int sk_size = (crypto_sign_SECRETKEYBYTES * 2) + 1;
+  char sk_digest[sk_size];
+  for (int i = 0; i < crypto_sign_SECRETKEYBYTES; i++) {
+    sprintf(&sk_digest[i*2], "%02x", (unsigned int) sk[i]);
+  }
+
+
+  int seed_size = (crypto_sign_SEEDBYTES * 2) + 1;
+  char seed_digest[seed_size];
+  for (int i = 0; i < crypto_sign_SEEDBYTES; i++) {
+    sprintf(&seed_digest[i*2], "%02x", (unsigned int) seed[i]);
+  }
+
+
+  int address_size = (ADDRESS_SIZE * 2) + 1;
+  char address_digest[address_size];
+  for (int i = 0; i < ADDRESS_SIZE; i++) {
+    sprintf(&address_digest[i*2], "%02x", (unsigned int) address[i]);
+  }
+
   leveldb_put(db, woptions, "initialized", 11, "true", 4, &err);
-  leveldb_put(db, woptions, "public_key", 10, (char *) pk, crypto_sign_PUBLICKEYBYTES, &err);
-  leveldb_put(db, woptions, "secret_key", 10, (char *) sk, crypto_sign_SECRETKEYBYTES, &err);
-  leveldb_put(db, woptions, "seed", 4, (char *) seed, crypto_sign_SEEDBYTES, &err);
-  leveldb_put(db, woptions, "address", 7, (char *) address, ADDRESS_SIZE, &err);
+  leveldb_put(db, woptions, "public_key", 10, pk_digest, pk_size, &err);
+  leveldb_put(db, woptions, "secret_key", 10, sk_digest, sk_size, &err);
+  leveldb_put(db, woptions, "seed", 4, seed_digest, seed_size, &err);
+  leveldb_put(db, woptions, "address", 7, address_digest, address_size, &err);
 
   uint32_t balance = 0;
   leveldb_put(db, woptions, "balance", 7, (char *) &balance, sizeof(uint32_t), &err);
@@ -72,9 +104,56 @@ int new_wallet() {
   err = NULL;
 
   // Close DB
-
-  leveldb_free(err);
   leveldb_close(db);
+
+  return 0;
+}
+
+int read_wallet() {
+  char *error = NULL;
+
+  leveldb_t *wallet = open_wallet(error);
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
+
+  if (error != NULL) {
+    fprintf(stderr, "Could not open wallet, please check if it exists\n");
+    return 1;
+  }
+
+  size_t read_len;
+  char *initialized = leveldb_get(wallet, roptions, "initialized", 11, &read_len, &error);
+
+  if (initialized == NULL) {
+    leveldb_free(initialized);
+    fprintf(stderr, "Wallet not initialized\n");
+    return 1;
+  }
+
+  leveldb_free(initialized);
+
+  size_t public_key_len;
+  size_t secret_key_len;
+  size_t seed_len;
+  size_t address_len;
+
+  char *public_key = leveldb_get(wallet, roptions, "public_key", 10, &public_key_len, &error);
+  char *secret_key = leveldb_get(wallet, roptions, "secret_key", 10, &secret_key_len, &error);
+  char *seed = leveldb_get(wallet, roptions, "seed", 4, &seed_len, &error);
+  char *address = leveldb_get(wallet, roptions, "address", 7, &address_len, &error);
+
+  printf("--- Wallet ---\n");
+  printf("Public Key: %s\n", public_key);
+  printf("Secret Key: %s\n", secret_key);
+  printf("Seed: %s\n", seed);
+  printf("Address: %s\n", address);
+
+  leveldb_free(public_key);
+  leveldb_free(secret_key);
+  leveldb_free(seed);
+  leveldb_free(address);
+  leveldb_free(error);
+
+  leveldb_close(wallet);
 
   return 0;
 }

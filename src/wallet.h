@@ -2,6 +2,7 @@
 #define WALLET_H
 
 #include <stdint.h>
+#include <leveldb/c.h>
 
 #define ADDRESS_SIZE crypto_hash_sha256_BYTES
 
@@ -12,7 +13,9 @@ struct Wallet {
   uint8_t *public_key;
 };
 
+leveldb_t *open_wallet();
 int new_wallet();
+int read_wallet();
 int public_key_to_address(unsigned char *address, unsigned char *pk);
 
 #endif
