@@ -7,25 +7,26 @@
 #include "main.h"
 #include "block.h"
 #include "wallet.h"
+#include "net.h"
 
 enum command {
   CMD_NONE,
   CMD_HELP,
   CMD_VERSION,
-  CMD_HASH,
   CMD_GENESIS,
   CMD_NEW_WALLET,
-  CMD_READ_WALLET
+  CMD_READ_WALLET,
+  CMD_SERVER
 };
 
 static struct opal_command commands[] = {
   {"none", CMD_NONE},
   {"help", CMD_HELP},
   {"version", CMD_VERSION},
-  {"hash", CMD_HASH},
   {"genesis", CMD_GENESIS},
   {"new_wallet", CMD_NEW_WALLET},
-  {"wallet", CMD_READ_WALLET}
+  {"wallet", CMD_READ_WALLET},
+  {"server", CMD_SERVER}
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -58,14 +59,6 @@ int main(int argc, char **argv) {
         print_version();
         break;
       }
-      case CMD_HASH: {
-        char digest[(crypto_hash_sha256_BYTES * 2) + 1];
-        unsigned char message[] = "Hello";
-
-        make_hash(digest, message);
-        printf("SHA256 Digest: %s\n", digest);
-        break;
-      }
       case CMD_GENESIS: {
         struct Block *block = make_block();
         block->timestamp = genesis_block.timestamp;
@@ -95,6 +88,10 @@ int main(int argc, char **argv) {
       }
       case CMD_READ_WALLET: {
         read_wallet();
+        break;
+      }
+      case CMD_SERVER: {
+        start_server();
         break;
       }
       default: {

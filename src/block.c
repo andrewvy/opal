@@ -7,7 +7,6 @@
 
 struct Block *make_block() {
   struct Block *block = malloc(sizeof(struct Block));
-  struct Transaction **transactions = malloc(sizeof(struct Transaction) * 1);
 
   block->version = BLOCK_VERSION;
   block->nonce = 0;
@@ -17,38 +16,7 @@ struct Block *make_block() {
     block->hash[i] = 0x00;
   }
 
-  block->merkle_root[0] = 0xe3;
-  block->merkle_root[1] = 0xb0;
-  block->merkle_root[2] = 0xc4;
-  block->merkle_root[3] = 0x42;
-  block->merkle_root[4] = 0x98;
-  block->merkle_root[4] = 0xfc;
-  block->merkle_root[5] = 0x1c;
-  block->merkle_root[6] = 0x14;
-  block->merkle_root[7] = 0x9a;
-  block->merkle_root[8] = 0xfb;
-  block->merkle_root[9] = 0xf4;
-  block->merkle_root[10] = 0xc8;
-  block->merkle_root[11] = 0x99;
-  block->merkle_root[12] = 0x6f;
-  block->merkle_root[13] = 0xb9;
-  block->merkle_root[14] = 0x24;
-  block->merkle_root[15] = 0x27;
-  block->merkle_root[16] = 0xae;
-  block->merkle_root[17] = 0x41;
-  block->merkle_root[18] = 0xe4;
-  block->merkle_root[19] = 0x64;
-  block->merkle_root[20] = 0x9b;
-  block->merkle_root[21] = 0x93;
-  block->merkle_root[22] = 0x4c;
-  block->merkle_root[23] = 0xa4;
-  block->merkle_root[24] = 0x95;
-  block->merkle_root[25] = 0x99;
-  block->merkle_root[26] = 0x1b;
-  block->merkle_root[27] = 0x78;
-  block->merkle_root[28] = 0x52;
-  block->merkle_root[29] = 0xb8;
-  block->merkle_root[20] = 0x55;
+  memcpy(block->merkle_root, &genesis_block.merkle_root, 32);
 
   block->bits = INITIAL_DIFFICULTY_BITS;
   block->timestamp = 0;

@@ -172,37 +172,6 @@ int read_wallet() {
 }
 
 /*
-  char pk_digest[(crypto_sign_PUBLICKEYBYTES * 2) + 1];
-  for (int i = 0; i < crypto_sign_PUBLICKEYBYTES; i++) {
-    sprintf(&pk_digest[i*2], "%02x", (unsigned int) pk[i]);
-  }
-
-  printf("Public Key: %s\n", pk_digest);
-
-  char sk_digest[(crypto_sign_SECRETKEYBYTES * 2) + 1];
-  for (int i = 0; i < crypto_sign_SECRETKEYBYTES; i++) {
-    sprintf(&sk_digest[i*2], "%02x", (unsigned int) sk[i]);
-  }
-
-  printf("Secret Key: %s\n", sk_digest);
-
-  char seed_digest[(crypto_sign_SEEDBYTES * 2) + 1];
-  for (int i = 0; i < crypto_sign_SEEDBYTES; i++) {
-    sprintf(&seed_digest[i*2], "%02x", (unsigned int) seed[i]);
-  }
-
-  printf("Seed: %s\n", seed_digest);
-
-
-  char address_digest[(ADDRESS_SIZE * 2) + 1];
-  for (int i = 0; i < ADDRESS_SIZE; i++) {
-    sprintf(&address_digest[i*2], "%02x", (unsigned int) address[i]);
-  }
-
-  printf("Address: %s\n", seed_digest);
-*/
-
-/*
   roptions = leveldb_readoptions_create();
   leveldb_iterator_t *iterator = leveldb_create_iterator(db, roptions);
 
@@ -217,7 +186,6 @@ int read_wallet() {
 
   leveldb_iter_destroy(iterator);
 */
-
 
 int public_key_to_address(uint8_t *address, uint8_t *pk) {
   uint8_t address_id = PROD_NET_ADDRESS_ID;
