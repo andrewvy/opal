@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <sodium.h>
 
-#define INPUT_TXIN_HEADER_SIZE (32 + 4)
-
 /*
  * Transactions can contain multiple InputTXs and multiple OutputTXs.
  *
@@ -22,6 +20,9 @@
  * Once an OutputTX is used as an InputTX, it is considered spent. (All value is used from a OutputTX when being used as input)
  * - If you don't want to spend everything from an InputTX, you can create a new OutputTX to send back to yourself as leftover-change.
  */
+
+#define TXIN_HEADER_SIZE (32 + 4)
+#define TXOUT_HEADER_SIZE (32 + 4)
 
 struct InputTransaction {
   // --- Header
@@ -40,13 +41,17 @@ struct OutputTransaction {
 
 struct Transaction {
   uint8_t id[32];
-  uint8_t input_transaction_count;
-  uint8_t output_transaction_count;
-  struct InputTransaction **input_transactions;
-  struct OutputTransaction **output_transactions;
+  uint8_t txin_count;
+  uint8_t txout_count;
+  struct InputTransaction **txins;
+  struct OutputTransaction **txouts;
 };
 
-int sign_txin(struct InputTransaction *txin, uint8_t *public_key, uint8_t *secret_key);
+int sign_txin(struct InputTransaction *txin, struct Transaction *tx, uint8_t *public_key, uint8_t *secret_key);
 int get_txin_header(uint8_t *header, struct InputTransaction *txin);
+int get_txout_header(uint8_t *header, struct OutputTransaction *txout);
+uint32_t get_tx_sign_header_size(struct Transaction *tx);
+uint32_t get_tx_header_size(struct Transaction *tx);
+int get_tx_sign_header(uint8_t *header, struct Transaction *Tx);
 
 #endif
