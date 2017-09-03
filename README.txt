@@ -9,6 +9,15 @@ Dependencies
 - libsodium
 - leveldb
 
+Currency Properties
+------------
+
+- 1MB block size
+- 200,000,000 coins (split into 100 fractions)
+- 60sec block time
+- 10hr difficulty adjustment period
+- Subsidy halving every 210,000 blocks
+
 License (MIT)
 ------------
 
