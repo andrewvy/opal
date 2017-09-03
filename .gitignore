@@ -2,6 +2,7 @@ bin/
 build/
 deps/
 wallet/
+!test/deps
 
 # Prerequisites
 *.d

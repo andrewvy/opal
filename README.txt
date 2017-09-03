@@ -8,6 +8,7 @@ Dependencies
 
 - libsodium
 - leveldb
+- greatest
 
 Currency Properties
 ------------

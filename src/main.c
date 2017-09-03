@@ -41,6 +41,7 @@ void make_hash(char *digest, unsigned char *string) {
   }
 }
 
+#ifndef OPAL_TEST
 int main(int argc, char **argv) {
   if (sodium_init() == -1) {
     return 1;
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
 
   return 0;
 }
+#endif
 
 int command(char *cmd_string) {
   for (int i = 0; i < MAX_COMMANDS; i++) {
