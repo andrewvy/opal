@@ -2,6 +2,7 @@
 #define BLOCK_H
 
 #include <stdint.h>
+#include "transaction.h"
 
 // MAX_BLOCK_SIZE: Max serialized size of a block (1MB)
 #define MAX_BLOCK_SIZE 1000000
@@ -34,27 +35,6 @@
 #define BLOCK_HEADER_SIZE (32 + 32 + 4 + 4 + 1 + 1)
 
 #define BLOCK_VERSION 0x01
-
-struct InputTransaction {
-  uint8_t transaction[32];
-  uint32_t amount;
-
-  uint8_t address[32];
-  uint8_t signature[32];
-};
-
-struct OutputTransaction {
-  uint32_t amount;
-  uint8_t address[32];
-};
-
-struct Transaction {
-  uint8_t id[32];
-  uint8_t input_transaction_count;
-  uint8_t output_transaction_count;
-  struct InputTransaction **input_transactions;
-  struct OutputTransaction **output_transactions;
-};
 
 struct Block {
   uint8_t version;
