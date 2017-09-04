@@ -157,16 +157,36 @@ PBlock *block_to_proto(struct Block *block) {
   return msg;
 }
 
-int block_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Block *block) {
+int block_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Block *block) {
   PBlock *msg = block_to_proto(block);
-  unsigned int len = pblock__get_packed_size(msg);
-  *buffer_len = len;
+  *buffer_len = pblock__get_packed_size(msg);
 
-  buffer = malloc(len);
-  pblock__pack(msg, buffer);
+  *buffer = malloc(*buffer_len);
+  pblock__pack(msg, *buffer);
   free_proto_block(msg);
 
   return 0;
+}
+
+struct Block *block_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
+  PBlock *msg = pblock__unpack(NULL, buffer_len, buffer);
+  struct Block *block = malloc(sizeof(struct Block));
+
+  block->version = msg->version;
+  block->bits = msg->bits;
+
+  memcpy(block->previous_hash, msg->previous_hash.data, 32);
+  memcpy(block->hash, msg->hash.data, 32);
+  memcpy(block->merkle_root, msg->merkle_root.data, 32);
+
+  block->timestamp = msg->timestamp;
+  block->nonce = msg->nonce;
+
+  // @TODO(vy): unpack transactions into struct
+
+  pblock__free_unpacked(msg, NULL);
+
+  return block;
 }
 
 int free_proto_block(PBlock *proto_block) {
