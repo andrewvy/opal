@@ -2,7 +2,9 @@
 #define BLOCK_H
 
 #include <stdint.h>
+
 #include "transaction.h"
+#include "block.pb-c.h"
 
 // MAX_BLOCK_SIZE: Max serialized size of a block (1MB)
 #define MAX_BLOCK_SIZE 1000000
@@ -97,5 +99,8 @@ int get_block_header(uint8_t *block_header, struct Block *block);
 int valid_block_hash(struct Block *block);
 int print_block(struct Block *block);
 int compare_with_genesis_block(struct Block *block);
+
+PBlock *block_to_proto(struct Block *block);
+int free_proto_block(PBlock *proto_block);
 
 #endif

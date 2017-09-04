@@ -123,18 +123,28 @@ int transaction_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Tran
 
   buffer = malloc(len);
   ptransaction__pack(msg, buffer);
-
-  for (int i = 0; i < tx->txin_count; i++) {
-    free(msg->txins[i]);
-  }
-
-  for (int i = 0; i < tx->txout_count; i++) {
-    free(msg->txouts[i]);
-  }
-
-  free(msg->txins);
-  free(msg->txouts);
-  free(msg);
+  free_proto_transaction(msg);
 
   return 0;
 }
+
+int free_proto_transaction(PTransaction *proto_transaction) {
+  for (int i = 0; i < proto_transaction->n_txins; i++) {
+    free(proto_transaction->txins[i]->transaction.data);
+    free(proto_transaction->txins[i]->signature.data);
+    free(proto_transaction->txins[i]->public_key.data);
+    free(proto_transaction->txins[i]);
+  }
+
+  for (int i = 0; i < proto_transaction->n_txouts; i++) {
+    free(proto_transaction->txouts[i]->address.data);
+    free(proto_transaction->txouts[i]);
+  }
+
+  free(proto_transaction->txins);
+  free(proto_transaction->txouts);
+  free(proto_transaction);
+
+  return 0;
+}
+

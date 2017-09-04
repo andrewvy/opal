@@ -4,6 +4,7 @@
 #include <sodium.h>
 
 #include "block.h"
+#include "block.pb-c.h"
 
 struct Block *make_block() {
   struct Block *block = malloc(sizeof(struct Block));
@@ -26,7 +27,10 @@ struct Block *make_block() {
 }
 
 int free_block(struct Block *block) {
-  free(block->transactions);
+  if (block->transaction_count > 0) {
+    free(block->transactions);
+  }
+
   free(block);
 
   return 0;
@@ -119,4 +123,49 @@ int compare_with_genesis_block(struct Block *block) {
   }
 
   return 0;
+}
+
+PBlock *block_to_proto(struct Block *block) {
+  PBlock *msg = malloc(sizeof(PBlock));
+  pblock__init(msg);
+
+  msg->version = block->version;
+  msg->bits = block->bits;
+
+  msg->previous_hash.len = 32;
+  msg->previous_hash.data = malloc(sizeof(char) * 32);
+  memcpy(msg->previous_hash.data, block->previous_hash, 32);
+
+  msg->hash.len = 32;
+  msg->hash.data = malloc(sizeof(char) * 32);
+  memcpy(msg->hash.data, block->hash, 32);
+
+  msg->timestamp = block->timestamp;
+  msg->nonce = block->nonce;
+
+  msg->merkle_root.len = 32;
+  msg->merkle_root.data = malloc(sizeof(char) * 32);
+  memcpy(msg->merkle_root.data, block->merkle_root, 32);
+
+  msg->n_transactions = block->transaction_count;
+  msg->transactions = malloc(sizeof(PTransaction *) * msg->n_transactions);
+
+  for (int i = 0; i < msg->n_transactions; i++) {
+    msg->transactions[i] = transaction_to_proto(block->transactions[i]);
+  }
+
+  return msg;
+}
+
+int free_proto_block(PBlock *proto_block) {
+  free(proto_block->previous_hash.data);
+  free(proto_block->hash.data);
+  free(proto_block->merkle_root.data);
+
+  for (int i = 0; i < proto_block->n_transactions; i++) {
+    free_proto_transaction(proto_block->transactions[i]);
+  }
+
+  free(proto_block->transactions);
+  free(proto_block);
 }

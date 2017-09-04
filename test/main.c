@@ -7,15 +7,7 @@
 #include "../src/block.h"
 
 SUITE_EXTERN(transaction_suite);
-
-TEST standalone_pass(void) {
-  struct Block *block = make_block();
-
-  ASSERT_EQ(block->version, BLOCK_VERSION);
-
-  free_block(block);
-  PASS();
-}
+SUITE_EXTERN(block_suite);
 
 GREATEST_MAIN_DEFS();
 
@@ -26,8 +18,8 @@ int main(int argc, char **argv) {
 
   GREATEST_MAIN_BEGIN();
 
-  RUN_TEST(standalone_pass);
   RUN_SUITE(transaction_suite);
+  RUN_SUITE(block_suite);
 
   GREATEST_MAIN_END();
 }
