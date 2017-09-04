@@ -1,0 +1,34 @@
+syntax = "proto2";
+
+message PInputTransaction {
+  required bytes transaction = 1;
+  required int32 txout_index = 2;
+  required bytes signature = 3;
+  required bytes public_key = 4;
+}
+
+message POutputTransaction {
+  required int32 amount = 1;
+  required bytes address = 2;
+}
+
+message PTransaction {
+  required bytes id = 1;
+  repeated PInputTransaction txins = 2;
+  repeated POutputTransaction txouts = 3;
+}
+
+message PBlock {
+  required int32 version = 1;
+  required int32 bits = 2;
+
+  required bytes previous_hash = 3;
+  required bytes hash = 4;
+
+  required int32 timestamp = 5;
+  required int32 nonce = 6;
+
+  required bytes merkle_root = 7;
+
+  repeated PTransaction transactions = 9;
+}

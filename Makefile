@@ -15,9 +15,9 @@ TEST_SOURCES := $(shell find $(TESTDIR) -type f -name *.$(SRCEXT))
 TEST_OBJECTS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/$(TESTDIR)/%,$(TEST_SOURCES:.$(SRCEXT)=.o))
 
 CC_LIB := -I/usr/local/include
-CFLAGS = -g $(CC_LIB)
+CFLAGS = -g $(CC_LIB) $(pkg-config --cflags 'libprotobuf-c >= 1.0.0')
 
-LIB := -L/usr/local/lib -lcrypto -Bstatic -lsodium -lleveldb
+LIB := -L/usr/local/lib -lcrypto -Bstatic -lsodium -lleveldb $(shell pkg-config --libs 'libprotobuf-c >= 1.0.0')
 INC := -I include
 
 all: opal
@@ -39,6 +39,7 @@ libsodium:
 		$(MAKE) install
 
 test: CFLAGS += -DOPAL_TEST
+test: CFLAGS += -g
 test: $(OBJECTS) $(TEST_OBJECTS)
 	@mkdir -p $(BINDIR)
 	@echo " $(CC) $(OBJECTS) $(TEST_OBJECTS) -o $(BINDIR)/opaltest $(LIB)"; $(CC) $(OBJECTS) $(TEST_OBJECTS) -o $(BINDIR)/opaltest $(LIB)

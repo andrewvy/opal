@@ -2,6 +2,7 @@ bin/
 build/
 deps/
 wallet/
+blockchain/
 !test/deps
 
 # Prerequisites

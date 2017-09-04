@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
+#include "block.pb-c.h"
 #include "transaction.h"
 
 /*
@@ -64,5 +66,67 @@ int get_tx_sign_header(uint8_t *header, struct Transaction *tx) {
 }
 
 int get_tx_header(uint8_t *header, struct Transaction *tx) {
+  return 0;
+}
+
+int transaction_to_serialized(struct Transaction *tx) {
+  PTransaction msg = PTRANSACTION__INIT;
+  void *buffer;
+
+  msg.id.len = 32;
+  msg.id.data = malloc(sizeof(char) * 32);
+
+  msg.n_txins = tx->txin_count;
+  msg.n_txouts = tx->txout_count;
+
+  msg.txins = malloc(sizeof(PInputTransaction *) * msg.n_txins);
+  msg.txouts = malloc(sizeof(POutputTransaction *) * msg.n_txouts);
+
+  for (int i = 0; i < msg.n_txins; i++) {
+    msg.txins[i] = malloc(sizeof(PInputTransaction));
+    pinput_transaction__init(msg.txins[i]);
+
+    msg.txins[i]->txout_index = tx->txins[i]->txout_index;
+
+    msg.txins[i]->transaction.len = 32;
+    msg.txins[i]->transaction.data = malloc(sizeof(uint8_t) * 32);
+    memcpy(msg.txins[i]->transaction.data, tx->txins[i]->transaction, 32);
+
+    msg.txins[i]->signature.len = crypto_sign_BYTES;
+    msg.txins[i]->signature.data = malloc(crypto_sign_BYTES);
+    memcpy(msg.txins[i]->signature.data, tx->txins[i]->signature, crypto_sign_BYTES);
+
+    msg.txins[i]->public_key.len = crypto_sign_PUBLICKEYBYTES;
+    msg.txins[i]->public_key.data = malloc(crypto_sign_PUBLICKEYBYTES);
+    memcpy(msg.txins[i]->public_key.data, tx->txins[i]->public_key, crypto_sign_PUBLICKEYBYTES);
+  }
+
+  for (int i = 0; i < msg.n_txouts; i++) {
+    msg.txouts[i] = malloc(sizeof(POutputTransaction));
+    poutput_transaction__init(msg.txouts[i]);
+
+    msg.txouts[i]->amount = tx->txouts[i]->amount;
+
+    msg.txouts[i]->address.len = 32;
+    msg.txouts[i]->address.data = malloc(sizeof(uint8_t) * 32);
+    memcpy(msg.txouts[i]->address.data, tx->txouts[i]->address, 32);
+  }
+
+  unsigned int len = ptransaction__get_packed_size(&msg);
+  buffer = malloc(len);
+  ptransaction__pack(&msg, buffer);
+
+  for (int i = 0; i < tx->txin_count; i++) {
+    free(msg.txins[i]);
+  }
+
+  for (int i = 0; i < tx->txout_count; i++) {
+    free(msg.txouts[i]);
+  }
+
+  free(msg.txins);
+  free(msg.txouts);
+  free(buffer);
+
   return 0;
 }

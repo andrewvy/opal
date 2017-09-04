@@ -52,6 +52,7 @@ int get_txin_header(uint8_t *header, struct InputTransaction *txin);
 int get_txout_header(uint8_t *header, struct OutputTransaction *txout);
 uint32_t get_tx_sign_header_size(struct Transaction *tx);
 uint32_t get_tx_header_size(struct Transaction *tx);
-int get_tx_sign_header(uint8_t *header, struct Transaction *Tx);
+int get_tx_sign_header(uint8_t *header, struct Transaction *tx);
+int transaction_to_serialized(struct Transaction *tx);
 
 #endif

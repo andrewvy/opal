@@ -8,6 +8,7 @@
 #include "block.h"
 #include "wallet.h"
 #include "net.h"
+#include "chain.h"
 
 enum command {
   CMD_NONE,
@@ -92,6 +93,7 @@ int main(int argc, char **argv) {
         break;
       }
       case CMD_SERVER: {
+        init_blockchain();
         start_server();
         break;
       }
@@ -103,6 +105,8 @@ int main(int argc, char **argv) {
     print_version();
     print_help();
   }
+
+  close_blockchain();
 
   return 0;
 }
