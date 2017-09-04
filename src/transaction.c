@@ -69,12 +69,12 @@ int get_tx_header(uint8_t *header, struct Transaction *tx) {
   return 0;
 }
 
-int transaction_to_serialized(struct Transaction *tx) {
+int transaction_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Transaction *tx) {
   PTransaction msg = PTRANSACTION__INIT;
-  void *buffer;
 
   msg.id.len = 32;
   msg.id.data = malloc(sizeof(char) * 32);
+  memcpy(msg.id.data, tx->id, 32);
 
   msg.n_txins = tx->txin_count;
   msg.n_txouts = tx->txout_count;
@@ -113,6 +113,8 @@ int transaction_to_serialized(struct Transaction *tx) {
   }
 
   unsigned int len = ptransaction__get_packed_size(&msg);
+  *buffer_len = len;
+
   buffer = malloc(len);
   ptransaction__pack(&msg, buffer);
 
@@ -126,7 +128,6 @@ int transaction_to_serialized(struct Transaction *tx) {
 
   free(msg.txins);
   free(msg.txouts);
-  free(buffer);
 
   return 0;
 }

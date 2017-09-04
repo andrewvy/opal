@@ -101,7 +101,11 @@ TEST can_serialize_tx(void) {
   tx.txin_count = 1;
   tx.txins = &txin_p;
 
-  transaction_to_serialized(&tx);
+  uint8_t *buffer = NULL;
+  uint32_t buffer_len;
+
+  transaction_to_serialized(buffer, &buffer_len, &tx);
+  free(buffer);
 
   PASS();
 }
