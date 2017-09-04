@@ -69,6 +69,12 @@ int get_tx_header(uint8_t *header, struct Transaction *tx) {
   return 0;
 }
 
+/*
+ * Converts an allocated tx to a newly allocated protobuf
+ * tx struct.
+ *
+ * Later to be free'd with `free_proto_transaction`
+ */
 PTransaction *transaction_to_proto(struct Transaction *tx) {
   PTransaction *msg = malloc(sizeof(PTransaction));
   ptransaction__init(msg);
@@ -148,6 +154,10 @@ int free_proto_transaction(PTransaction *proto_transaction) {
   return 0;
 }
 
+/*
+ * Frees an allocated TX, and its corresponding allocated
+ * TXINs and TXOUTs.
+ */
 int free_transaction(struct Transaction *tx) {
   for (int i = 0; i < tx->txin_count; i++) {
     free(tx->txins[i]);

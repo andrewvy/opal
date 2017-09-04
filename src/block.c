@@ -6,6 +6,10 @@
 #include "block.h"
 #include "block.pb-c.h"
 
+/* Allocates a block for usage.
+ *
+ * Later to be free'd with `free_block`
+ */
 struct Block *make_block() {
   struct Block *block = malloc(sizeof(struct Block));
 
@@ -115,6 +119,12 @@ int compare_with_genesis_block(struct Block *block) {
   return 0;
 }
 
+/*
+ * Converts an allocated block to a newly allocated protobuf
+ * block struct.
+ *
+ * Later to be free'd with `free_proto_block`
+ */
 PBlock *block_to_proto(struct Block *block) {
   PBlock *msg = malloc(sizeof(PBlock));
   pblock__init(msg);
@@ -162,6 +172,9 @@ int free_proto_block(PBlock *proto_block) {
   return 0;
 }
 
+/*
+ * Frees an allocated block, and its corresponding TXs.
+ */
 int free_block(struct Block *block) {
   for (int i = 0; i < block->transaction_count; i++) {
     free_transaction(block->transactions[i]);
