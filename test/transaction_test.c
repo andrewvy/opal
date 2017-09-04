@@ -104,7 +104,7 @@ TEST can_serialize_tx(void) {
   uint8_t *buffer = NULL;
   uint32_t buffer_len;
 
-  transaction_to_serialized(buffer, &buffer_len, &tx);
+  transaction_to_serialized(&buffer, &buffer_len, &tx);
   free(buffer);
 
   PASS();

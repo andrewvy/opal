@@ -168,23 +168,34 @@ int block_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Block *bl
   return 0;
 }
 
-struct Block *block_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
-  PBlock *msg = pblock__unpack(NULL, buffer_len, buffer);
+struct Block *block_from_proto(PBlock *proto_block) {
   struct Block *block = malloc(sizeof(struct Block));
 
-  block->version = msg->version;
-  block->bits = msg->bits;
+  block->version = proto_block->version;
+  block->bits = proto_block->bits;
 
-  memcpy(block->previous_hash, msg->previous_hash.data, 32);
-  memcpy(block->hash, msg->hash.data, 32);
-  memcpy(block->merkle_root, msg->merkle_root.data, 32);
+  memcpy(block->previous_hash, proto_block->previous_hash.data, 32);
+  memcpy(block->hash, proto_block->hash.data, 32);
+  memcpy(block->merkle_root, proto_block->merkle_root.data, 32);
 
-  block->timestamp = msg->timestamp;
-  block->nonce = msg->nonce;
+  block->timestamp = proto_block->timestamp;
+  block->nonce = proto_block->nonce;
 
   // @TODO(vy): unpack transactions into struct
+  block->transaction_count = proto_block->n_transactions;
+  block->transactions = malloc(sizeof(struct Transaction *) * block->transaction_count);
 
-  pblock__free_unpacked(msg, NULL);
+  for (int i = 0; i < block->transaction_count; i++) {
+    block->transactions[i] = transaction_from_proto(proto_block->transactions[i]);
+  }
+
+  return block;
+}
+
+struct Block *block_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
+  PBlock *proto_block = pblock__unpack(NULL, buffer_len, buffer);
+  struct Block *block = block_from_proto(proto_block);
+  pblock__free_unpacked(proto_block, NULL);
 
   return block;
 }

@@ -124,10 +124,12 @@ TEST can_serialize_block(void) {
   ASSERT_EQ(block->version, deserialized_block->version);
   ASSERT_EQ(block->timestamp, deserialized_block->timestamp);
   ASSERT_EQ(block->nonce, deserialized_block->nonce);
+  ASSERT_EQ(block->transaction_count, deserialized_block->transaction_count);
 
   ASSERT_MEM_EQ(block->hash, deserialized_block->hash, 32);
   ASSERT_MEM_EQ(block->previous_hash, deserialized_block->previous_hash, 32);
   ASSERT_MEM_EQ(block->merkle_root, deserialized_block->merkle_root, 32);
+  ASSERT_MEM_EQ(txout->address, deserialized_block->transactions[0]->txouts[0]->address, 32);
 
   free(buffer);
   free_block(block);

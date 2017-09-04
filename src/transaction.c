@@ -122,16 +122,65 @@ PTransaction *transaction_to_proto(struct Transaction *tx) {
   return msg;
 }
 
-int transaction_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Transaction *tx) {
+int transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Transaction *tx) {
   PTransaction *msg = transaction_to_proto(tx);
   unsigned int len = ptransaction__get_packed_size(msg);
   *buffer_len = len;
 
-  buffer = malloc(len);
-  ptransaction__pack(msg, buffer);
+  *buffer = malloc(len);
+  ptransaction__pack(msg, *buffer);
   free_proto_transaction(msg);
 
   return 0;
+}
+
+struct InputTransaction *txin_from_proto(PInputTransaction *proto_txin) {
+  struct InputTransaction *txin = malloc(sizeof(struct InputTransaction));
+
+  memcpy(txin->transaction, proto_txin->transaction.data, 32);
+  txin->txout_index = proto_txin->txout_index;
+  memcpy(txin->signature, proto_txin->signature.data, crypto_sign_BYTES);
+  memcpy(txin->public_key, proto_txin->public_key.data, crypto_sign_PUBLICKEYBYTES);
+
+  return txin;
+}
+
+struct OutputTransaction *txout_from_proto(POutputTransaction *proto_txout) {
+  struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
+
+  txout->amount = proto_txout->amount;
+  memcpy(txout->address, proto_txout->address.data, 32);
+
+  return txout;
+}
+
+struct Transaction *transaction_from_proto(PTransaction *proto_tx) {
+  struct Transaction *tx = malloc(sizeof(struct Transaction));
+
+  memcpy(tx->id, proto_tx->id.data, 32);
+  tx->txin_count = proto_tx->n_txins;
+  tx->txout_count = proto_tx->n_txouts;
+
+  tx->txins = malloc(sizeof(struct InputTransaction *) * tx->txin_count);
+  tx->txouts = malloc(sizeof(struct OutputTransaction *) * tx->txout_count);
+
+  for (int i = 0; i < tx->txin_count; i++) {
+    tx->txins[i] = txin_from_proto(proto_tx->txins[i]);
+  }
+
+  for (int i = 0; i < tx->txout_count; i++) {
+    tx->txouts[i] = txout_from_proto(proto_tx->txouts[i]);
+  }
+
+  return tx;
+}
+
+struct Transaction *transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
+  PTransaction *proto_tx = ptransaction__unpack(NULL, buffer_len, buffer);
+  struct Transaction *tx = transaction_from_proto(proto_tx);
+  ptransaction__free_unpacked(proto_tx, NULL);
+
+  return tx;
 }
 
 int free_proto_transaction(PTransaction *proto_transaction) {
