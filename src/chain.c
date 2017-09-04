@@ -4,6 +4,7 @@
 
 #include <leveldb/c.h>
 
+#include "block.h"
 #include "chain.h"
 
 static int IS_BLOCKCHAIN_OPEN = 0;
@@ -46,6 +47,16 @@ int init_blockchain() {
   return 0;
 }
 
+int insert_block_into_blockchain(struct Block *block) {
+  uint8_t key[33];
+
+  key[0] = 'b';
+  for (int i = 0; i < 32; i++) {
+    key[i + 1] = block->hash[i];
+  }
+
+  return 0;
+}
 
 /*
  * This function gets the block height by iterating all keys in the blockchain db.

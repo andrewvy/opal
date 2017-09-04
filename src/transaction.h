@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sodium.h>
 
+#include "block.pb-c.h"
+
 /*
  * Transactions can contain multiple InputTXs and multiple OutputTXs.
  *
@@ -54,6 +56,7 @@ uint32_t get_tx_sign_header_size(struct Transaction *tx);
 uint32_t get_tx_header_size(struct Transaction *tx);
 int get_tx_sign_header(uint8_t *header, struct Transaction *tx);
 
+PTransaction *transaction_to_proto(struct Transaction *tx);
 int transaction_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Transaction *tx);
 
 #endif
