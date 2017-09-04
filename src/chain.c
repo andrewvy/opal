@@ -1,5 +1,7 @@
 #include <string.h>
+#include <stdint.h>
 #include <stdio.h>
+
 #include <leveldb/c.h>
 
 #include "chain.h"
@@ -41,25 +43,28 @@ int close_blockchain() {
 int init_blockchain() {
   open_blockchain();
 
-  char *err = NULL;
-  uint8_t bytes[4];
-  uint32_t n = 2;
+  return 0;
+}
 
-  bytes[0] = (n >> 24) & 0xFF;
-  bytes[1] = (n >> 16) & 0xFF;
-  bytes[2] = (n >> 8) & 0xFF;
-  bytes[3] = n & 0xFF;
+
+/*
+ * This function gets the block height by iterating all keys in the blockchain db.
+ * All blocks get prefixed with "b + <block_hash>".
+ *
+ * For the sake of dev time, only blocks in the db are valid + main chain.
+ */
+uint32_t get_block_height() {
+  uint32_t block_height = 0;
 
   leveldb_readoptions_t *roptions = leveldb_readoptions_create();
-  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
-  leveldb_put(db, woptions, "height", 6, (char *) bytes, 4, &err);
+  leveldb_iterator_t *iterator = leveldb_create_iterator(db, roptions);
 
-  size_t read_len;
-  uint32_t read_block_height = 50;
-  unsigned char *bh = (unsigned char *) leveldb_get(db, roptions, "height", 6, &read_len, &err);;
+  for (leveldb_iter_seek(iterator, "b", 1); leveldb_iter_valid(iterator); leveldb_iter_next(iterator)) {
+    block_height++;
+  }
 
-  read_block_height = (bh[3] & 0xFF << 24) | (bh[2] & 0xFF << 16) | (bh[1] & 0xFF << 8) | (bh[0] & 0xFF);
-  printf("Returned blockheight: %d\n", read_block_height);
+  leveldb_readoptions_destroy(roptions);
+  leveldb_iter_destroy(iterator);
 
-  return 0;
+  return block_height;
 }

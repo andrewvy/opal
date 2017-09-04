@@ -17,7 +17,8 @@ enum command {
   CMD_GENESIS,
   CMD_NEW_WALLET,
   CMD_READ_WALLET,
-  CMD_SERVER
+  CMD_SERVER,
+  CMD_BLOCKHEIGHT
 };
 
 static struct opal_command commands[] = {
@@ -27,7 +28,8 @@ static struct opal_command commands[] = {
   {"genesis", CMD_GENESIS},
   {"new_wallet", CMD_NEW_WALLET},
   {"wallet", CMD_READ_WALLET},
-  {"server", CMD_SERVER}
+  {"server", CMD_SERVER},
+  {"blockheight", CMD_BLOCKHEIGHT}
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -47,6 +49,8 @@ int main(int argc, char **argv) {
   if (sodium_init() == -1) {
     return 1;
   }
+
+  init_blockchain();
 
   if (argc > 1) {
     switch(command(argv[1])) {
@@ -93,8 +97,12 @@ int main(int argc, char **argv) {
         break;
       }
       case CMD_SERVER: {
-        init_blockchain();
         start_server();
+        break;
+      }
+      case CMD_BLOCKHEIGHT: {
+        uint32_t height = get_block_height();
+        printf("Current local blockheight: %d\n", height);
         break;
       }
       default: {

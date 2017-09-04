@@ -171,22 +171,6 @@ int read_wallet() {
   return 0;
 }
 
-/*
-  roptions = leveldb_readoptions_create();
-  leveldb_iterator_t *iterator = leveldb_create_iterator(db, roptions);
-
-  for (leveldb_iter_seek(iterator, "key", 3); leveldb_iter_valid(iterator); leveldb_iter_next(iterator)) {
-    size_t key_length;
-    size_t value_length;
-    const char *key = leveldb_iter_key(iterator, &key_length);
-    const char *value = leveldb_iter_value(iterator, &value_length);
-
-    printf("Key: %s - Value: %s\n", key, value);
-  }
-
-  leveldb_iter_destroy(iterator);
-*/
-
 int public_key_to_address(uint8_t *address, uint8_t *pk) {
   uint8_t address_id = PROD_NET_ADDRESS_ID;
   memcpy(address, &address_id, sizeof(uint8_t) * 1);
