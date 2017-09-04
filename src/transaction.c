@@ -148,3 +148,16 @@ int free_proto_transaction(PTransaction *proto_transaction) {
   return 0;
 }
 
+int free_transaction(struct Transaction *tx) {
+  for (int i = 0; i < tx->txin_count; i++) {
+    free(tx->txins[i]);
+  }
+
+  for (int i = 0; i < tx->txout_count; i++) {
+    free(tx->txouts[i]);
+  }
+
+  free(tx);
+
+  return 0;
+}

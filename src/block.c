@@ -26,16 +26,6 @@ struct Block *make_block() {
   return block;
 }
 
-int free_block(struct Block *block) {
-  if (block->transaction_count > 0) {
-    free(block->transactions);
-  }
-
-  free(block);
-
-  return 0;
-}
-
 int hash_block(struct Block *block) {
   uint8_t header[BLOCK_HEADER_SIZE];
 
@@ -168,4 +158,20 @@ int free_proto_block(PBlock *proto_block) {
 
   free(proto_block->transactions);
   free(proto_block);
+
+  return 0;
+}
+
+int free_block(struct Block *block) {
+  for (int i = 0; i < block->transaction_count; i++) {
+    free_transaction(block->transactions[i]);
+  }
+
+  if (block->transaction_count > 0) {
+    free(block->transactions);
+  }
+
+  free(block);
+
+  return 0;
 }
