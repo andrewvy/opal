@@ -157,6 +157,18 @@ PBlock *block_to_proto(struct Block *block) {
   return msg;
 }
 
+int block_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Block *block) {
+  PBlock *msg = block_to_proto(block);
+  unsigned int len = pblock__get_packed_size(msg);
+  *buffer_len = len;
+
+  buffer = malloc(len);
+  pblock__pack(msg, buffer);
+  free_proto_block(msg);
+
+  return 0;
+}
+
 int free_proto_block(PBlock *proto_block) {
   free(proto_block->previous_hash.data);
   free(proto_block->hash.data);

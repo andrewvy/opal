@@ -102,5 +102,6 @@ int compare_with_genesis_block(struct Block *block);
 
 PBlock *block_to_proto(struct Block *block);
 int free_proto_block(PBlock *proto_block);
+int block_to_serialized(uint8_t *buffer, uint32_t *buffer_len, struct Block *block);
 
 #endif
