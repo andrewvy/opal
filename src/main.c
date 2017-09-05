@@ -9,6 +9,7 @@
 #include "wallet.h"
 #include "net.h"
 #include "chain.h"
+#include "miner.h"
 
 enum command {
   CMD_NONE,
@@ -18,7 +19,8 @@ enum command {
   CMD_NEW_WALLET,
   CMD_READ_WALLET,
   CMD_SERVER,
-  CMD_BLOCKHEIGHT
+  CMD_BLOCKHEIGHT,
+  CMD_MINE
 };
 
 static struct opal_command commands[] = {
@@ -29,7 +31,8 @@ static struct opal_command commands[] = {
   {"new_wallet", CMD_NEW_WALLET},
   {"wallet", CMD_READ_WALLET},
   {"server", CMD_SERVER},
-  {"blockheight", CMD_BLOCKHEIGHT}
+  {"blockheight", CMD_BLOCKHEIGHT},
+  {"mine", CMD_MINE}
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -103,6 +106,10 @@ int main(int argc, char **argv) {
       case CMD_BLOCKHEIGHT: {
         uint32_t height = get_block_height();
         printf("Current local blockheight: %d\n", height);
+        break;
+      }
+      case CMD_MINE: {
+        start_mining();
         break;
       }
       default: {

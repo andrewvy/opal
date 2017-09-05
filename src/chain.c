@@ -7,7 +7,9 @@
 #include "block.h"
 #include "chain.h"
 
+static uint8_t current_block_hash[32];
 static int IS_BLOCKCHAIN_OPEN = 0;
+
 static leveldb_t *db;
 
 int open_blockchain() {
@@ -24,6 +26,8 @@ int open_blockchain() {
     fprintf(stderr, "Could not open blockchain db %s\n", err);
     return 1;
   }
+
+  insert_block_into_blockchain(&genesis_block);
 
   IS_BLOCKCHAIN_OPEN = 1;
   leveldb_free(err);
@@ -48,11 +52,27 @@ int init_blockchain() {
 }
 
 int insert_block_into_blockchain(struct Block *block) {
+  char *err = NULL;
   uint8_t key[33];
 
   key[0] = 'b';
   for (int i = 0; i < 32; i++) {
     key[i + 1] = block->hash[i];
+  }
+
+  uint8_t *buffer = NULL;
+  uint32_t buffer_len = 0;
+
+  block_to_serialized(&buffer, &buffer_len, block);
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_put(db, woptions, (char *) key, 33, (char *) buffer, buffer_len, &err);
+
+  free(buffer);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not insert block into blockchain: %s\n", err);
+    return 1;
   }
 
   return 0;
@@ -78,4 +98,13 @@ uint32_t get_block_height() {
   leveldb_iter_destroy(iterator);
 
   return block_height;
+}
+
+uint8_t *get_current_block_hash() {
+  return current_block_hash;
+}
+
+int set_current_block_hash(uint8_t *hash) {
+  memcpy(current_block_hash, hash, 32);
+  return 0;
 }

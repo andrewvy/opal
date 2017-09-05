@@ -30,7 +30,7 @@
 // DIFFICULTY_PERIOD_IN_BLOCKS_TARGET: How long difficulty should last (blocks)
 #define DIFFICULTY_PERIOD_IN_BLOCKS_TARGET (DIFFICULTY_PERIOD_IN_SECS_TARGET / TIME_BETWEEN_BLOCKS_IN_SECS_TARGET)
 
-#define INITIAL_DIFFICULTY_BITS 24
+#define INITIAL_DIFFICULTY_BITS 85
 
 #define HALVE_SUBSIDY_AFTER_BLOCKS_NUM = 210000
 
@@ -99,6 +99,8 @@ int get_block_header(uint8_t *block_header, struct Block *block);
 int valid_block_hash(struct Block *block);
 int print_block(struct Block *block);
 int compare_with_genesis_block(struct Block *block);
+
+int compute_merkle_root(uint8_t *merkle_root, struct Block *block);
 
 PBlock *block_to_proto(struct Block *block);
 int free_proto_block(PBlock *proto_block);

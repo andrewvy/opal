@@ -12,4 +12,7 @@ int insert_block_into_blockchain(struct Block *block);
 
 int init_blockchain();
 
+uint8_t *get_current_block_hash();
+int set_current_block_hash(uint8_t *hash);
+
 #endif

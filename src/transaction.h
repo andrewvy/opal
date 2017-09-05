@@ -56,6 +56,8 @@ uint32_t get_tx_sign_header_size(struct Transaction *tx);
 uint32_t get_tx_header_size(struct Transaction *tx);
 int get_tx_sign_header(uint8_t *header, struct Transaction *tx);
 
+int compute_tx_id(uint8_t *header, struct Transaction *tx);
+
 PTransaction *transaction_to_proto(struct Transaction *tx);
 struct Transaction *transaction_from_proto(PTransaction *proto_tx);
 int transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Transaction *tx);

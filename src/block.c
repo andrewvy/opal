@@ -44,11 +44,24 @@ int valid_block_hash(struct Block *block) {
   uint32_t current_target = 0;
 
   for (int i = 0; i < 32; i++) {
-    int zeroes = __builtin_clz(block->hash[i]);
-    current_target += zeroes;
+    uint8_t byte = block->hash[i];
+    uint32_t n = 0;
 
-    if (zeroes != 8)
-      break;
+    if (byte <= 0x0F) {
+      n = n + 4;
+      byte = byte << 4;
+    }
+
+    if (byte <= 0x3F) {
+      n = n + 2;
+      byte = byte << 2;
+    }
+
+    if (byte <= 0x7F) {
+      n = n + 1;
+    }
+
+    current_target += n;
   }
 
   if (current_target > target) {
@@ -56,6 +69,18 @@ int valid_block_hash(struct Block *block) {
   } else {
     return 0;
   }
+}
+
+int compute_merkle_root(uint8_t *merkle_root, struct Block *block) {
+  uint8_t **hashes = malloc(sizeof(uint8_t) * 32 * block->transaction_count);
+
+  for (int i = 0; i < block->transaction_count; i++) {
+    compute_tx_id(hashes[i], block->transactions[i]);
+  }
+
+  free(hashes);
+
+  return 0;
 }
 
 int get_block_header(uint8_t *block_header, struct Block *block) {
