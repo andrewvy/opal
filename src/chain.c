@@ -28,6 +28,7 @@ int open_blockchain() {
   }
 
   insert_block_into_blockchain(&genesis_block);
+  set_current_block_hash(genesis_block.hash);
 
   IS_BLOCKCHAIN_OPEN = 1;
   leveldb_free(err);

@@ -6,9 +6,10 @@ Cryptocurrency implementation in C, built for educational reasons.
 Dependencies
 ------------
 
-- libsodium
-- leveldb
-- greatest
+- libsodium (https://github.com/jedisct1/libsodium)
+- leveldb (https://github.com/google/leveldb)
+- greatest (https://github.com/silentbicycle/greatest)
+- protobuf-c (https://github.com/protobuf-c/protobuf-c)
 
 Currency Properties
 ------------
@@ -16,7 +17,7 @@ Currency Properties
 - 200,000,000 coins (split into 100 fractions)
 - 60sec block time
 - 10hr difficulty adjustment period
-- Subsidy halving every 210,000 blocks
+- Subsidy halving every 200,000 blocks
 
 License (MIT)
 ------------
