@@ -3,6 +3,11 @@
 
 #include "merkle.h"
 
+/*
+ * Constructing a Merkle Tree requires passing a large allocated uint8_t that contains
+ * a series of 32 byte hashes. (non-separated). A second parameter determines the number
+ * of hashes the hash buffer contains.
+ */
 struct MerkleTree *construct_merkle_tree_from_leaves(uint8_t *hashes, uint32_t num_of_hashes) {
   if (num_of_hashes <= 1) {
     return NULL;
@@ -28,6 +33,9 @@ struct MerkleTree *construct_merkle_tree_from_leaves(uint8_t *hashes, uint32_t n
   return tree;
 }
 
+/*
+ * Loops through all of the hashes, and creates leave nodes for each hash.
+ */
 int construct_merkle_leaves_from_hashes(struct MerkleNode **nodes, uint32_t *num_of_nodes, uint8_t *hashes, uint32_t num_of_hashes) {
   for (int i = 0; i < num_of_hashes; i++) {
     struct MerkleNode *node = malloc(sizeof(struct MerkleNode));
@@ -40,6 +48,9 @@ int construct_merkle_leaves_from_hashes(struct MerkleNode **nodes, uint32_t *num
   return 0;
 }
 
+/*
+ * Collapses the list of nodes into a smaller list of parent nodes that are hashes of 2 child nodes.
+ */
 int collapse_merkle_nodes(struct MerkleNode **nodes, uint32_t *num_of_nodes) {
   int current_node_idx = 0;
   struct MerkleNode **temp_nodes = malloc(sizeof(struct MerkleNode *) * (*num_of_nodes));
@@ -65,6 +76,9 @@ int collapse_merkle_nodes(struct MerkleNode **nodes, uint32_t *num_of_nodes) {
   return 0;
 }
 
+/*
+ * Creates a MerkleNode that contains the hash of two MerkleNodes.
+ */
 struct MerkleNode *construct_merkle_node(struct MerkleNode *left, struct MerkleNode *right) {
   uint8_t *combined_hash = malloc(sizeof(uint8_t) * 64);
   uint8_t *node_hash = malloc(sizeof(uint8_t) * 32);
@@ -83,6 +97,9 @@ struct MerkleNode *construct_merkle_node(struct MerkleNode *left, struct MerkleN
   return node;
 }
 
+/*
+ * Frees a merkle tree in DFS postorder traversal.
+ */
 int free_merkle_tree(struct MerkleTree *tree) {
   free_merkle_node(tree->root);
   free(tree);

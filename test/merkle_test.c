@@ -10,7 +10,6 @@ SUITE(merkle_suite);
  * A: 06f961b802bc46ee168555f066d28f4f0e9afdf3f88174c1ee6f9de004fc30a0
  * B: c0cde77fa8fef97d476c10aad3d2d54fcc2f336140d073651c2dcccf1e379fd6
  * C: 12f37a8a84034d3e623d726fe10e5031f4df997ac13f4d5571b5a90c41fb84fe
- *
  */
 
 TEST can_construct_merkle_tree(void) {
@@ -94,6 +93,7 @@ TEST can_construct_merkle_tree(void) {
   free(hash_abcc);
   free(hash_buffer);
   free(hash_region);
+  free_merkle_tree(tree);
 
   PASS();
 }
