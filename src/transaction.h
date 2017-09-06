@@ -26,6 +26,8 @@
 #define TXIN_HEADER_SIZE (32 + 4)
 #define TXOUT_HEADER_SIZE (32 + 4)
 
+extern uint8_t zero_tx_hash[32];
+
 struct InputTransaction {
   // --- Header
   uint8_t transaction[32]; // Previous tx hash/id

@@ -23,6 +23,7 @@ struct MerkleTree *construct_merkle_tree_from_leaves(uint8_t *hashes, uint32_t n
   construct_merkle_leaves_from_hashes(nodes, &num_of_nodes, hashes, num_of_hashes);
 
   while (num_of_nodes > 1) {
+    printf("COLLAPSE FLOOR: NUM OF NODES AT LEVEL: %d\n", num_of_nodes);
     collapse_merkle_nodes(nodes, &num_of_nodes);
   }
 
@@ -39,6 +40,8 @@ struct MerkleTree *construct_merkle_tree_from_leaves(uint8_t *hashes, uint32_t n
 int construct_merkle_leaves_from_hashes(struct MerkleNode **nodes, uint32_t *num_of_nodes, uint8_t *hashes, uint32_t num_of_hashes) {
   for (int i = 0; i < num_of_hashes; i++) {
     struct MerkleNode *node = malloc(sizeof(struct MerkleNode));
+    node->left = NULL;
+    node->right = NULL;
     memcpy(node->hash, &hashes[i * 32], 32);
     nodes[i] = node;
   }
@@ -90,6 +93,8 @@ struct MerkleNode *construct_merkle_node(struct MerkleNode *left, struct MerkleN
 
   struct MerkleNode *node = malloc(sizeof(struct MerkleNode));
   memcpy(node->hash, node_hash, 32);
+  node->left = left;
+  node->right = right;
 
   free(combined_hash);
   free(node_hash);
@@ -112,8 +117,20 @@ int free_merkle_node(struct MerkleNode *node) {
     return 1;
   }
 
-  free_merkle_node(node->left);
-  free_merkle_node(node->right);
+  if ((node->left != NULL) && (node->left == node->right)) {
+    free_merkle_node(node->left);
+  } else {
+    if (node->left != NULL) {
+      free_merkle_node(node->left);
+      node->left = NULL;
+    }
+
+    if (node->right != NULL) {
+      free_merkle_node(node->right);
+      node->right = NULL;
+    }
+  }
+
   free(node);
 
   return 0;

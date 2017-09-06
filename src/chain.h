@@ -1,14 +1,19 @@
 #ifndef CHAIN_H
 #define CHAIN_H
 
-#include <block.h>
 #include <stdint.h>
+
+#include "block.h"
+#include "transaction.h"
 
 int open_blockchain();
 int close_blockchain();
 
 uint32_t get_block_height();
 int insert_block_into_blockchain(struct Block *block);
+struct Block *get_block_from_blockchain(uint8_t *block_hash);
+
+int insert_tx_into_index(uint8_t *block_key, struct Transaction *tx);
 
 int init_blockchain();
 

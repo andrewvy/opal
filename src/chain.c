@@ -31,7 +31,9 @@ int open_blockchain() {
   set_current_block_hash(genesis_block.hash);
 
   IS_BLOCKCHAIN_OPEN = 1;
+
   leveldb_free(err);
+  leveldb_free(options);
 
   return 0;
 }
@@ -73,6 +75,68 @@ int insert_block_into_blockchain(struct Block *block) {
 
   if (err != NULL) {
     fprintf(stderr, "Could not insert block into blockchain: %s\n", err);
+
+    leveldb_free(err);
+    leveldb_free(woptions);
+
+    return 0;
+  }
+
+  leveldb_free(err);
+  leveldb_free(woptions);
+
+  return 1;
+}
+
+struct Block *get_block_from_blockchain(uint8_t *block_hash) {
+  char *err = NULL;
+  uint8_t key[33];
+
+  key[0] = 'b';
+  for (int i = 0; i < 32; i++) {
+    key[i + 1] = block_hash[i];
+  }
+
+  size_t read_len;
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
+  uint8_t *serialized_block = (uint8_t *) leveldb_get(db, roptions, (char *) key, 33, &read_len, &err);
+
+  if (err != NULL || serialized_block == NULL) {
+    fprintf(stderr, "Could not retrieve block from blockchain: %s\n", err);
+
+    leveldb_free(err);
+    leveldb_free(roptions);
+    return NULL;
+  }
+
+  struct Block *block = block_from_serialized(serialized_block, read_len);
+
+  leveldb_free(serialized_block);
+  leveldb_free(err);
+  leveldb_free(roptions);
+
+  return block;
+}
+
+int insert_transaction_into_blockchain(uint8_t *block_key, struct Transaction *tx) {
+  char *err = NULL;
+  uint8_t key[33];
+
+  key[0] = 't';
+  for (int i = 0; i < 32; i++) {
+    key[i + 1] = tx->id[i];
+  }
+
+  uint8_t *buffer = NULL;
+  uint32_t buffer_len = 0;
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_put(db, woptions, (char *) block_key, 33, (char *) buffer, buffer_len, &err);
+
+  free(buffer);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not insert tx into blockchain: %s\n", err);
     return 1;
   }
 
