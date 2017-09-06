@@ -18,6 +18,7 @@ PROTOBUF_C__BEGIN_DECLS
 typedef struct _PInputTransaction PInputTransaction;
 typedef struct _POutputTransaction POutputTransaction;
 typedef struct _PTransaction PTransaction;
+typedef struct _PUnspentTransaction PUnspentTransaction;
 typedef struct _PBlock PBlock;
 
 
@@ -62,6 +63,19 @@ struct  _PTransaction
 #define PTRANSACTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&ptransaction__descriptor) \
     , {0,NULL}, 0,NULL, 0,NULL }
+
+
+struct  _PUnspentTransaction
+{
+  ProtobufCMessage base;
+  ProtobufCBinaryData id;
+  protobuf_c_boolean coinbase;
+  size_t n_unspent_txouts;
+  POutputTransaction **unspent_txouts;
+};
+#define PUNSPENT_TRANSACTION__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&punspent_transaction__descriptor) \
+    , {0,NULL}, 0, 0,NULL }
 
 
 struct  _PBlock
@@ -139,6 +153,25 @@ PTransaction *
 void   ptransaction__free_unpacked
                      (PTransaction *message,
                       ProtobufCAllocator *allocator);
+/* PUnspentTransaction methods */
+void   punspent_transaction__init
+                     (PUnspentTransaction         *message);
+size_t punspent_transaction__get_packed_size
+                     (const PUnspentTransaction   *message);
+size_t punspent_transaction__pack
+                     (const PUnspentTransaction   *message,
+                      uint8_t             *out);
+size_t punspent_transaction__pack_to_buffer
+                     (const PUnspentTransaction   *message,
+                      ProtobufCBuffer     *buffer);
+PUnspentTransaction *
+       punspent_transaction__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   punspent_transaction__free_unpacked
+                     (PUnspentTransaction *message,
+                      ProtobufCAllocator *allocator);
 /* PBlock methods */
 void   pblock__init
                      (PBlock         *message);
@@ -169,6 +202,9 @@ typedef void (*POutputTransaction_Closure)
 typedef void (*PTransaction_Closure)
                  (const PTransaction *message,
                   void *closure_data);
+typedef void (*PUnspentTransaction_Closure)
+                 (const PUnspentTransaction *message,
+                  void *closure_data);
 typedef void (*PBlock_Closure)
                  (const PBlock *message,
                   void *closure_data);
@@ -181,6 +217,7 @@ typedef void (*PBlock_Closure)
 extern const ProtobufCMessageDescriptor pinput_transaction__descriptor;
 extern const ProtobufCMessageDescriptor poutput_transaction__descriptor;
 extern const ProtobufCMessageDescriptor ptransaction__descriptor;
+extern const ProtobufCMessageDescriptor punspent_transaction__descriptor;
 extern const ProtobufCMessageDescriptor pblock__descriptor;
 
 PROTOBUF_C__END_DECLS

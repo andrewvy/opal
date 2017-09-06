@@ -18,6 +18,12 @@ message PTransaction {
   repeated POutputTransaction txouts = 3;
 }
 
+message PUnspentTransaction {
+  required bytes id = 1;
+  required bool coinbase = 2;
+  repeated POutputTransaction unspent_txouts = 3;
+}
+
 message PBlock {
   required int32 version = 1;
   required int32 bits = 2;

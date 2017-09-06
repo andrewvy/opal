@@ -154,10 +154,67 @@ TEST can_delete_tx_from_index(void) {
   }
 }
 
+TEST can_insert_unspent_tx_into_index(void) {
+  struct InputTransaction txin = {
+    .transaction = {
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00
+    },
+    .txout_index = 0
+  };
+
+  struct OutputTransaction txout = {
+    .amount = 50,
+    .address = {
+      0x01, 0x3e, 0x46, 0xa5,
+      0xc6, 0x99, 0x4e, 0x35,
+      0x55, 0x50, 0x1c, 0xba,
+      0xc0, 0x7c, 0x06, 0x77
+    }
+  };
+
+  struct OutputTransaction *txout_p = &txout;
+  struct Transaction tx = {
+    .txin_count = 1,
+    .txout_count = 1,
+    .txouts = &txout_p
+  };
+
+  unsigned char pk[crypto_sign_PUBLICKEYBYTES];
+  unsigned char sk[crypto_sign_SECRETKEYBYTES];
+
+  crypto_sign_keypair(pk, sk);
+  sign_txin(&txin, &tx, pk, sk);
+
+  insert_unspent_tx_into_index(&tx);
+  struct Transaction *unspent_tx = get_unspent_tx_from_index(tx.id);
+
+  if (unspent_tx != NULL) {
+    ASSERT_MEM_EQ(tx.txouts[0]->address, unspent_tx->txouts[0]->address, 32);
+    delete_unspent_tx_from_index(tx.id);
+    struct Transaction *deleted_tx = get_unspent_tx_from_index(tx.id);
+
+    ASSERT(deleted_tx == NULL);
+
+    free_transaction(unspent_tx);
+
+    PASS();
+  } else {
+    FAIL();
+  }
+}
+
 GREATEST_SUITE(chain_suite) {
   RUN_TEST(can_insert_block_into_blockchain);
   RUN_TEST(inserting_block_into_blockchain_also_inserts_tx);
   RUN_TEST(can_get_block_from_tx_id);
   RUN_TEST(can_delete_block_from_blockchain);
   RUN_TEST(can_delete_tx_from_index);
+  RUN_TEST(can_insert_unspent_tx_into_index);
 }

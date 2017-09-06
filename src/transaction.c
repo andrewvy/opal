@@ -76,12 +76,19 @@ int get_tx_sign_header(uint8_t *header, struct Transaction *tx) {
   return 0;
 }
 
+/*
+ * A transaction is valid if:
+ * - It is a generation tx
+ * - It has TXINs that reference valid unspent TXOUTs
+ */
 int valid_transaction(struct Transaction *tx) {
-  if (tx) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return (
+    is_generation_tx(tx)
+  );
+}
+
+int is_generation_tx(struct Transaction *tx) {
+  return (tx->txin_count == 1 && tx->txout_count == 1 && memcpy(tx->id, zero_hash, 32) == 0);
 }
 
 int compute_tx_id(uint8_t *header, struct Transaction *tx) {
@@ -154,6 +161,32 @@ PTransaction *transaction_to_proto(struct Transaction *tx) {
   return msg;
 }
 
+PUnspentTransaction *unspent_transaction_to_proto(struct Transaction *tx) {
+  PUnspentTransaction *msg = malloc(sizeof(PTransaction));
+  punspent_transaction__init(msg);
+
+  msg->id.len = 32;
+  msg->id.data = malloc(sizeof(char) * 32);
+  memcpy(msg->id.data, tx->id, 32);
+
+  msg->coinbase = is_generation_tx(tx);
+  msg->n_unspent_txouts = tx->txout_count;
+  msg->unspent_txouts = malloc(sizeof(POutputTransaction *) * msg->n_unspent_txouts);
+
+  for (int i = 0; i < msg->n_unspent_txouts; i++) {
+    msg->unspent_txouts[i] = malloc(sizeof(POutputTransaction));
+    poutput_transaction__init(msg->unspent_txouts[i]);
+
+    msg->unspent_txouts[i]->amount = tx->txouts[i]->amount;
+
+    msg->unspent_txouts[i]->address.len = 32;
+    msg->unspent_txouts[i]->address.data = malloc(sizeof(uint8_t) * 32);
+    memcpy(msg->unspent_txouts[i]->address.data, tx->txouts[i]->address, 32);
+  }
+
+  return msg;
+}
+
 int transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Transaction *tx) {
   PTransaction *msg = transaction_to_proto(tx);
   unsigned int len = ptransaction__get_packed_size(msg);
@@ -162,6 +195,18 @@ int transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Tra
   *buffer = malloc(len);
   ptransaction__pack(msg, *buffer);
   free_proto_transaction(msg);
+
+  return 0;
+}
+
+int unspent_transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Transaction *tx) {
+  PUnspentTransaction *msg = unspent_transaction_to_proto(tx);
+  unsigned int len = punspent_transaction__get_packed_size(msg);
+  *buffer_len = len;
+
+  *buffer = malloc(len);
+  punspent_transaction__pack(msg, *buffer);
+  free_proto_unspent_transaction(msg);
 
   return 0;
 }
@@ -207,10 +252,34 @@ struct Transaction *transaction_from_proto(PTransaction *proto_tx) {
   return tx;
 }
 
+struct Transaction *unspent_transaction_from_proto(PUnspentTransaction *proto_unspent_tx) {
+  struct Transaction *tx = malloc(sizeof(struct Transaction));
+
+  memcpy(tx->id, proto_unspent_tx->id.data, 32);
+
+  tx->txin_count = 0;
+  tx->txout_count = proto_unspent_tx->n_unspent_txouts;
+  tx->txouts = malloc(sizeof(struct OutputTransaction *) * tx->txout_count);
+
+  for (int i = 0; i < tx->txout_count; i++) {
+    tx->txouts[i] = txout_from_proto(proto_unspent_tx->unspent_txouts[i]);
+  }
+
+  return tx;
+}
+
 struct Transaction *transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
   PTransaction *proto_tx = ptransaction__unpack(NULL, buffer_len, buffer);
   struct Transaction *tx = transaction_from_proto(proto_tx);
   ptransaction__free_unpacked(proto_tx, NULL);
+
+  return tx;
+}
+
+struct Transaction *unspent_transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
+  PUnspentTransaction *proto_unspent_tx = punspent_transaction__unpack(NULL, buffer_len, buffer);
+  struct Transaction *tx = unspent_transaction_from_proto(proto_unspent_tx);
+  punspent_transaction__free_unpacked(proto_unspent_tx, NULL);
 
   return tx;
 }
@@ -231,6 +300,17 @@ int free_proto_transaction(PTransaction *proto_transaction) {
   free(proto_transaction->txins);
   free(proto_transaction->txouts);
   free(proto_transaction);
+
+  return 0;
+}
+
+int free_proto_unspent_transaction(PUnspentTransaction *proto_unspent_tx) {
+  for (int i = 0; i < proto_unspent_tx->n_unspent_txouts; i++) {
+    free(proto_unspent_tx->unspent_txouts[i]->address.data);
+    free(proto_unspent_tx->unspent_txouts[i]);
+  }
+
+  free(proto_unspent_tx);
 
   return 0;
 }

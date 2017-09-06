@@ -133,6 +133,57 @@ int insert_tx_into_index(uint8_t *block_key, struct Transaction *tx) {
   return 0;
 }
 
+int insert_unspent_tx_into_index(struct Transaction *tx) {
+  char *err = NULL;
+  uint8_t key[33];
+  get_unspent_tx_key(key, tx->id);
+
+  uint8_t *buffer = NULL;
+  uint32_t buffer_len = 0;
+  unspent_transaction_to_serialized(&buffer, &buffer_len, tx);
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_put(db, woptions, (char *) key, 33, (char *) buffer, buffer_len, &err);
+
+  free(buffer);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not insert tx into blockchain: %s\n", err);
+    return 1;
+  }
+
+  leveldb_free(err);
+  leveldb_free(woptions);
+
+  return 0;
+}
+
+struct Transaction *get_unspent_tx_from_index(uint8_t *tx_id) {
+  char *err = NULL;
+  uint8_t key[33];
+  get_unspent_tx_key(key, tx_id);
+
+  size_t read_len;
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
+  uint8_t *serialized_tx = (uint8_t *) leveldb_get(db, roptions, (char *) key, 33, &read_len, &err);
+
+  if (err != NULL || serialized_tx == NULL) {
+    fprintf(stderr, "Could not retrieve unspent tx from index\n");
+
+    leveldb_free(err);
+    leveldb_free(roptions);
+    return NULL;
+  }
+
+  struct Transaction *tx = unspent_transaction_from_serialized(serialized_tx, read_len);
+
+  leveldb_free(serialized_tx);
+  leveldb_free(err);
+  leveldb_free(roptions);
+
+  return tx;
+}
+
 uint8_t *get_block_hash_from_tx_id(uint8_t *tx_id) {
   char *err = NULL;
   uint8_t key[33];
@@ -233,6 +284,26 @@ int delete_tx_from_index(uint8_t *tx_id) {
   return 1;
 }
 
+int delete_unspent_tx_from_index(uint8_t *tx_id) {
+  char *err = NULL;
+  uint8_t key[33];
+  get_unspent_tx_key(key, tx_id);
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_delete(db, woptions, (char *) key, 33, &err);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not delete tx from unspent index\n");
+    free(woptions);
+    free(err);
+
+    return 0;
+  }
+
+  free(woptions);
+  return 1;
+}
+
 uint8_t *get_current_block_hash() {
   return current_block_hash;
 }
@@ -244,6 +315,13 @@ int set_current_block_hash(uint8_t *hash) {
 
 int get_tx_key(uint8_t *buffer, uint8_t *tx_id) {
   buffer[0] = 't';
+  memcpy(buffer + 1, tx_id, 32);
+
+  return 0;
+}
+
+int get_unspent_tx_key(uint8_t *buffer, uint8_t *tx_id) {
+  buffer[0] = 'c';
   memcpy(buffer + 1, tx_id, 32);
 
   return 0;
