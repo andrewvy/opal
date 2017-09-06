@@ -63,8 +63,10 @@ TEST inserting_block_into_blockchain_also_inserts_tx(void) {
 
   if (block_hash_from_tx != NULL) {
     ASSERT_MEM_EQ(block->hash, block_hash_from_tx, 32);
+    free_block(block);
     PASS();
   } else {
+    free_block(block);
     FAIL();
   }
 }
@@ -88,8 +90,11 @@ TEST can_get_block_from_tx_id(void) {
 
   if (block_from_db != NULL) {
     ASSERT_MEM_EQ(block->hash, block_from_db->hash, 32);
+    free_block(block);
+    free_block(block_from_db);
     PASS();
   } else {
+    free_block(block);
     FAIL();
   }
 }

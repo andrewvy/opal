@@ -57,11 +57,7 @@ int init_blockchain() {
 int insert_block_into_blockchain(struct Block *block) {
   char *err = NULL;
   uint8_t key[33];
-
-  key[0] = 'b';
-  for (int i = 0; i < 32; i++) {
-    key[i + 1] = block->hash[i];
-  }
+  get_block_key(key, block->hash);
 
   uint8_t *buffer = NULL;
   uint32_t buffer_len = 0;
@@ -95,11 +91,7 @@ int insert_block_into_blockchain(struct Block *block) {
 struct Block *get_block_from_blockchain(uint8_t *block_hash) {
   char *err = NULL;
   uint8_t key[33];
-
-  key[0] = 'b';
-  for (int i = 0; i < 32; i++) {
-    key[i + 1] = block_hash[i];
-  }
+  get_block_key(key, block_hash);
 
   size_t read_len;
   leveldb_readoptions_t *roptions = leveldb_readoptions_create();
@@ -125,11 +117,7 @@ struct Block *get_block_from_blockchain(uint8_t *block_hash) {
 int insert_tx_into_index(uint8_t *block_key, struct Transaction *tx) {
   char *err = NULL;
   uint8_t key[33];
-
-  key[0] = 't';
-  for (int i = 0; i < 32; i++) {
-    key[i + 1] = tx->id[i];
-  }
+  get_tx_key(key, tx->id);
 
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_put(db, woptions, (char *) key, 33, (char *) block_key, 33, &err);
@@ -148,11 +136,7 @@ int insert_tx_into_index(uint8_t *block_key, struct Transaction *tx) {
 uint8_t *get_block_hash_from_tx_id(uint8_t *tx_id) {
   char *err = NULL;
   uint8_t key[33];
-
-  key[0] = 't';
-  for (int i = 0; i < 32; i++) {
-    key[i + 1] = tx_id[i];
-  }
+  get_tx_key(key, tx_id);
 
   size_t read_len;
   leveldb_readoptions_t *roptions = leveldb_readoptions_create();
@@ -215,5 +199,19 @@ uint8_t *get_current_block_hash() {
 
 int set_current_block_hash(uint8_t *hash) {
   memcpy(current_block_hash, hash, 32);
+  return 0;
+}
+
+int get_tx_key(uint8_t *buffer, uint8_t *tx_id) {
+  buffer[0] = 't';
+  memcpy(buffer + 1, tx_id, 32);
+
+  return 0;
+}
+
+int get_block_key(uint8_t *buffer, uint8_t *block_hash) {
+  buffer[0] = 'b';
+  memcpy(buffer + 1, block_hash, 32);
+
   return 0;
 }
