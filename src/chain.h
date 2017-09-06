@@ -18,8 +18,8 @@ int insert_tx_into_index(uint8_t *block_key, struct Transaction *tx);
 uint8_t *get_block_hash_from_tx_id(uint8_t *tx_id);
 struct Block *get_block_from_tx_id(uint8_t *tx_id);
 
-int delete_block_from_db(uint8_t *block_key);
-int delete_tx_from_db(uint8_t *tx_id);
+int delete_block_from_blockchain(uint8_t *block_hash);
+int delete_tx_from_index(uint8_t *tx_id);
 
 uint8_t *get_current_block_hash();
 int set_current_block_hash(uint8_t *hash);

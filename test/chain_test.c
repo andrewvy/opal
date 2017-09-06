@@ -99,8 +99,65 @@ TEST can_get_block_from_tx_id(void) {
   }
 }
 
+TEST can_delete_block_from_blockchain(void) {
+  struct Block *block = make_block();
+  memcpy(block->hash, block_hash, 32);
+
+  insert_block_into_blockchain(block);
+  struct Block *block_from_db = get_block_from_blockchain(block_hash);
+
+  ASSERT(block_from_db != NULL);
+
+  delete_block_from_blockchain(block_hash);
+  struct Block *deleted_block = get_block_from_blockchain(block_hash);
+
+  ASSERT(deleted_block == NULL);
+
+  free_block(block);
+  free_block(block_from_db);
+
+  return 0;
+}
+
+TEST can_delete_tx_from_index(void) {
+  struct Transaction *tx = malloc(sizeof(struct Transaction));
+  memcpy(tx->id, tx_id, 32);
+  tx->txin_count = 0;
+  tx->txout_count = 0;
+  tx->txins = NULL;
+  tx->txouts = NULL;
+
+  struct Block *block = make_block();
+  memcpy(block->hash, block_hash, 32);
+  block->transaction_count = 1;
+  block->transactions = malloc(sizeof(struct Transaction *) * 1);
+  block->transactions[0] = tx;
+
+  insert_block_into_blockchain(block);
+  struct Block *block_from_db = get_block_from_tx_id(tx_id);
+
+  if (block_from_db != NULL) {
+    ASSERT_MEM_EQ(block->hash, block_from_db->hash, 32);
+
+    delete_tx_from_index(tx_id);
+    struct Block *deleted_block = get_block_from_tx_id(tx_id);
+
+    ASSERT(deleted_block == NULL);
+
+    free_block(block);
+    free_block(block_from_db);
+
+    PASS();
+  } else {
+    free_block(block);
+    FAIL();
+  }
+}
+
 GREATEST_SUITE(chain_suite) {
   RUN_TEST(can_insert_block_into_blockchain);
   RUN_TEST(inserting_block_into_blockchain_also_inserts_tx);
   RUN_TEST(can_get_block_from_tx_id);
+  RUN_TEST(can_delete_block_from_blockchain);
+  RUN_TEST(can_delete_tx_from_index);
 }

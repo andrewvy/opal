@@ -193,6 +193,46 @@ uint32_t get_block_height() {
   return block_height;
 }
 
+int delete_block_from_blockchain(uint8_t *block_hash) {
+  char *err = NULL;
+  uint8_t key[33];
+  get_block_key(key, block_hash);
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_delete(db, woptions, (char *) key, 33, &err);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not delete block from blockchain\n");
+    free(woptions);
+    free(err);
+
+    return 0;
+  }
+
+  free(woptions);
+  return 1;
+}
+
+int delete_tx_from_index(uint8_t *tx_id) {
+  char *err = NULL;
+  uint8_t key[33];
+  get_tx_key(key, tx_id);
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_delete(db, woptions, (char *) key, 33, &err);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not delete tx from index\n");
+    free(woptions);
+    free(err);
+
+    return 0;
+  }
+
+  free(woptions);
+  return 1;
+}
+
 uint8_t *get_current_block_hash() {
   return current_block_hash;
 }
