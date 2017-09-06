@@ -92,7 +92,6 @@ static struct Block genesis_block = {
   }
 };
 
-
 int free_block(struct Block *block);
 int hash_block(struct Block *block);
 int get_block_header(uint8_t *block_header, struct Block *block);
@@ -100,7 +99,11 @@ int valid_block_hash(struct Block *block);
 int print_block(struct Block *block);
 int compare_with_genesis_block(struct Block *block);
 
+int valid_block(struct Block *block);
+int valid_merkle_root(struct Block *block);
+
 int compute_merkle_root(uint8_t *merkle_root, struct Block *block);
+int compute_self_merkle_root(struct Block *block);
 
 PBlock *block_to_proto(struct Block *block);
 int free_proto_block(PBlock *proto_block);

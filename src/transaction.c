@@ -65,6 +65,14 @@ int get_tx_sign_header(uint8_t *header, struct Transaction *tx) {
   return 0;
 }
 
+int valid_transaction(struct Transaction *tx) {
+  if (tx) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 int compute_tx_id(uint8_t *header, struct Transaction *tx) {
   uint8_t *buffer = NULL;
   uint32_t buffer_len = 0;
@@ -72,6 +80,12 @@ int compute_tx_id(uint8_t *header, struct Transaction *tx) {
   transaction_to_serialized(&buffer, &buffer_len, tx);
   crypto_hash_sha256(header, buffer, buffer_len);
   free(buffer);
+
+  return 0;
+}
+
+int compute_self_tx_id(struct Transaction *tx) {
+  compute_tx_id(tx->id, tx);
 
   return 0;
 }

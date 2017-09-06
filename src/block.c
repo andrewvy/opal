@@ -6,6 +6,8 @@
 #include "block.h"
 #include "block.pb-c.h"
 
+#include "merkle.h"
+
 /* Allocates a block for usage.
  *
  * Later to be free'd with `free_block`
@@ -37,6 +39,55 @@ int hash_block(struct Block *block) {
   crypto_hash_sha256(block->hash, header, 32 + 1 + 1);
 
   return 0;
+}
+
+int valid_block(struct Block *block) {
+  for (int first_tx_index = 0; first_tx_index < block->transaction_count; first_tx_index++) {
+    struct Transaction *first_tx = block->transactions[first_tx_index];
+
+    if (valid_transaction(first_tx) != 0) {
+      return 0;
+    }
+
+    for (int second_tx_index = 0; second_tx_index < block->transaction_count; second_tx_index++) {
+      struct Transaction *second_tx = block->transactions[second_tx_index];
+
+      // TXs can not have duplicate transaction hash IDs
+      if ((first_tx_index != second_tx_index) && memcmp(block->transactions[first_tx_index], block->transactions[second_tx_index], 32)) {
+        return 0;
+      }
+
+      // TXs cannot reference the same txout id + index
+      for (int first_txin_index = 0; first_txin_index < block->transactions[first_tx_index]->txin_count; first_txin_index++) {
+        struct InputTransaction *txin_first = first_tx->txins[first_tx_index];
+
+        for (int second_txin_index = 0; second_txin_index < block->transactions[second_tx_index]->txin_count; second_txin_index++) {
+          struct InputTransaction *txin_second = second_tx->txins[second_txin_index];
+
+          if ((memcmp(txin_first->transaction, txin_second->transaction, 32) == 0) && (txin_first->txout_index == txin_second->txout_index)) {
+            return 0;
+          }
+        }
+      }
+    }
+  }
+
+  if (valid_merkle_root(block) != 0) {
+    return 0;
+  }
+
+  return 1;
+}
+
+int valid_merkle_root(struct Block *block) {
+  uint8_t *merkle_root = malloc(sizeof(uint8_t) * 32);
+  compute_merkle_root(merkle_root, block);
+
+  if (memcmp(merkle_root, block->merkle_root, 32) == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 int valid_block_hash(struct Block *block) {
@@ -72,13 +123,23 @@ int valid_block_hash(struct Block *block) {
 }
 
 int compute_merkle_root(uint8_t *merkle_root, struct Block *block) {
-  uint8_t **hashes = malloc(sizeof(uint8_t) * 32 * block->transaction_count);
+  uint8_t *hashes = malloc(sizeof(uint8_t) * 32 * block->transaction_count);
 
   for (int i = 0; i < block->transaction_count; i++) {
-    compute_tx_id(hashes[i], block->transactions[i]);
+    compute_tx_id(&hashes[32 * i], block->transactions[i]);
   }
 
+  struct MerkleTree *tree = construct_merkle_tree_from_leaves(hashes, block->transaction_count);
+  memcpy(merkle_root, tree->root->hash, 32);
+
+  free_merkle_tree(tree);
   free(hashes);
+
+  return 0;
+}
+
+int compute_self_merkle_root(struct Block *block) {
+  compute_merkle_root(block->merkle_root, block);
 
   return 0;
 }

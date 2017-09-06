@@ -56,7 +56,10 @@ uint32_t get_tx_sign_header_size(struct Transaction *tx);
 uint32_t get_tx_header_size(struct Transaction *tx);
 int get_tx_sign_header(uint8_t *header, struct Transaction *tx);
 
+int valid_transaction(struct Transaction *tx);
+
 int compute_tx_id(uint8_t *header, struct Transaction *tx);
+int compute_self_tx_id(struct Transaction *tx);
 
 PTransaction *transaction_to_proto(struct Transaction *tx);
 struct Transaction *transaction_from_proto(PTransaction *proto_tx);
