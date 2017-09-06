@@ -23,7 +23,6 @@ struct MerkleTree *construct_merkle_tree_from_leaves(uint8_t *hashes, uint32_t n
   construct_merkle_leaves_from_hashes(nodes, &num_of_nodes, hashes, num_of_hashes);
 
   while (num_of_nodes > 1) {
-    printf("COLLAPSE FLOOR: NUM OF NODES AT LEVEL: %d\n", num_of_nodes);
     collapse_merkle_nodes(nodes, &num_of_nodes);
   }
 
