@@ -44,3 +44,25 @@ message PBlock {
 
   repeated PTransaction transactions = 9;
 }
+
+message PWallet {
+  bytes public_key = 1;
+  bytes address = 2;
+  int32 balance = 3;
+}
+
+message PEmpty {
+}
+
+message PSendTransactionRequest {
+  PTransaction transaction = 1;
+}
+
+message PSendTransactionResponse {
+  bytes transaction_id = 1;
+}
+
+service PInternalService {
+  rpc GetWallet (PEmpty) returns (PWallet);
+  rpc SendTransaction (PSendTransactionRequest) returns (PSendTransactionResponse);
+}

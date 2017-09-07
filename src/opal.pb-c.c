@@ -277,6 +277,231 @@ void   pblock__free_unpacked
   assert(message->base.descriptor == &pblock__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   pwallet__init
+                     (PWallet         *message)
+{
+  static const PWallet init_value = PWALLET__INIT;
+  *message = init_value;
+}
+size_t pwallet__get_packed_size
+                     (const PWallet *message)
+{
+  assert(message->base.descriptor == &pwallet__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t pwallet__pack
+                     (const PWallet *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &pwallet__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t pwallet__pack_to_buffer
+                     (const PWallet *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &pwallet__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PWallet *
+       pwallet__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PWallet *)
+     protobuf_c_message_unpack (&pwallet__descriptor,
+                                allocator, len, data);
+}
+void   pwallet__free_unpacked
+                     (PWallet *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &pwallet__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   pversion__init
+                     (PVersion         *message)
+{
+  static const PVersion init_value = PVERSION__INIT;
+  *message = init_value;
+}
+size_t pversion__get_packed_size
+                     (const PVersion *message)
+{
+  assert(message->base.descriptor == &pversion__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t pversion__pack
+                     (const PVersion *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &pversion__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t pversion__pack_to_buffer
+                     (const PVersion *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &pversion__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PVersion *
+       pversion__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PVersion *)
+     protobuf_c_message_unpack (&pversion__descriptor,
+                                allocator, len, data);
+}
+void   pversion__free_unpacked
+                     (PVersion *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &pversion__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   pempty__init
+                     (PEmpty         *message)
+{
+  static const PEmpty init_value = PEMPTY__INIT;
+  *message = init_value;
+}
+size_t pempty__get_packed_size
+                     (const PEmpty *message)
+{
+  assert(message->base.descriptor == &pempty__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t pempty__pack
+                     (const PEmpty *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &pempty__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t pempty__pack_to_buffer
+                     (const PEmpty *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &pempty__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PEmpty *
+       pempty__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PEmpty *)
+     protobuf_c_message_unpack (&pempty__descriptor,
+                                allocator, len, data);
+}
+void   pempty__free_unpacked
+                     (PEmpty *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &pempty__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   psend_transaction_request__init
+                     (PSendTransactionRequest         *message)
+{
+  static const PSendTransactionRequest init_value = PSEND_TRANSACTION_REQUEST__INIT;
+  *message = init_value;
+}
+size_t psend_transaction_request__get_packed_size
+                     (const PSendTransactionRequest *message)
+{
+  assert(message->base.descriptor == &psend_transaction_request__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t psend_transaction_request__pack
+                     (const PSendTransactionRequest *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &psend_transaction_request__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t psend_transaction_request__pack_to_buffer
+                     (const PSendTransactionRequest *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &psend_transaction_request__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PSendTransactionRequest *
+       psend_transaction_request__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PSendTransactionRequest *)
+     protobuf_c_message_unpack (&psend_transaction_request__descriptor,
+                                allocator, len, data);
+}
+void   psend_transaction_request__free_unpacked
+                     (PSendTransactionRequest *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &psend_transaction_request__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   psend_transaction_response__init
+                     (PSendTransactionResponse         *message)
+{
+  static const PSendTransactionResponse init_value = PSEND_TRANSACTION_RESPONSE__INIT;
+  *message = init_value;
+}
+size_t psend_transaction_response__get_packed_size
+                     (const PSendTransactionResponse *message)
+{
+  assert(message->base.descriptor == &psend_transaction_response__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t psend_transaction_response__pack
+                     (const PSendTransactionResponse *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &psend_transaction_response__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t psend_transaction_response__pack_to_buffer
+                     (const PSendTransactionResponse *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &psend_transaction_response__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PSendTransactionResponse *
+       psend_transaction_response__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PSendTransactionResponse *)
+     protobuf_c_message_unpack (&psend_transaction_response__descriptor,
+                                allocator, len, data);
+}
+void   psend_transaction_response__free_unpacked
+                     (PSendTransactionResponse *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &psend_transaction_response__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 static const ProtobufCFieldDescriptor pinput_transaction__field_descriptors[4] =
 {
   {
@@ -727,3 +952,242 @@ const ProtobufCMessageDescriptor pblock__descriptor =
   (ProtobufCMessageInit) pblock__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+static const ProtobufCFieldDescriptor pwallet__field_descriptors[3] =
+{
+  {
+    "public_key",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(PWallet, public_key),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "address",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(PWallet, address),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "balance",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(PWallet, balance),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned pwallet__field_indices_by_name[] = {
+  1,   /* field[1] = address */
+  2,   /* field[2] = balance */
+  0,   /* field[0] = public_key */
+};
+static const ProtobufCIntRange pwallet__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 3 }
+};
+const ProtobufCMessageDescriptor pwallet__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "PWallet",
+  "PWallet",
+  "PWallet",
+  "",
+  sizeof(PWallet),
+  3,
+  pwallet__field_descriptors,
+  pwallet__field_indices_by_name,
+  1,  pwallet__number_ranges,
+  (ProtobufCMessageInit) pwallet__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor pversion__field_descriptors[1] =
+{
+  {
+    "version",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(PVersion, version),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned pversion__field_indices_by_name[] = {
+  0,   /* field[0] = version */
+};
+static const ProtobufCIntRange pversion__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor pversion__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "PVersion",
+  "PVersion",
+  "PVersion",
+  "",
+  sizeof(PVersion),
+  1,
+  pversion__field_descriptors,
+  pversion__field_indices_by_name,
+  1,  pversion__number_ranges,
+  (ProtobufCMessageInit) pversion__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+#define pempty__field_descriptors NULL
+#define pempty__field_indices_by_name NULL
+#define pempty__number_ranges NULL
+const ProtobufCMessageDescriptor pempty__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "PEmpty",
+  "PEmpty",
+  "PEmpty",
+  "",
+  sizeof(PEmpty),
+  0,
+  pempty__field_descriptors,
+  pempty__field_indices_by_name,
+  0,  pempty__number_ranges,
+  (ProtobufCMessageInit) pempty__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor psend_transaction_request__field_descriptors[1] =
+{
+  {
+    "transaction",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(PSendTransactionRequest, transaction),
+    &ptransaction__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned psend_transaction_request__field_indices_by_name[] = {
+  0,   /* field[0] = transaction */
+};
+static const ProtobufCIntRange psend_transaction_request__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor psend_transaction_request__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "PSendTransactionRequest",
+  "PSendTransactionRequest",
+  "PSendTransactionRequest",
+  "",
+  sizeof(PSendTransactionRequest),
+  1,
+  psend_transaction_request__field_descriptors,
+  psend_transaction_request__field_indices_by_name,
+  1,  psend_transaction_request__number_ranges,
+  (ProtobufCMessageInit) psend_transaction_request__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor psend_transaction_response__field_descriptors[1] =
+{
+  {
+    "transaction_id",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(PSendTransactionResponse, transaction_id),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned psend_transaction_response__field_indices_by_name[] = {
+  0,   /* field[0] = transaction_id */
+};
+static const ProtobufCIntRange psend_transaction_response__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor psend_transaction_response__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "PSendTransactionResponse",
+  "PSendTransactionResponse",
+  "PSendTransactionResponse",
+  "",
+  sizeof(PSendTransactionResponse),
+  1,
+  psend_transaction_response__field_descriptors,
+  psend_transaction_response__field_indices_by_name,
+  1,  psend_transaction_response__number_ranges,
+  (ProtobufCMessageInit) psend_transaction_response__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCMethodDescriptor pinternal_service__method_descriptors[2] =
+{
+  { "GetVersion", &pempty__descriptor, &pversion__descriptor },
+  { "GetWallet", &pempty__descriptor, &pwallet__descriptor },
+};
+const unsigned pinternal_service__method_indices_by_name[] = {
+  0,        /* GetVersion */
+  1         /* GetWallet */
+};
+const ProtobufCServiceDescriptor pinternal_service__descriptor =
+{
+  PROTOBUF_C__SERVICE_DESCRIPTOR_MAGIC,
+  "PInternalService",
+  "PInternalService",
+  "PInternalService",
+  "",
+  2,
+  pinternal_service__method_descriptors,
+  pinternal_service__method_indices_by_name
+};
+void pinternal_service__get_version(ProtobufCService *service,
+                                    const PEmpty *input,
+                                    PVersion_Closure closure,
+                                    void *closure_data)
+{
+  assert(service->descriptor == &pinternal_service__descriptor);
+  service->invoke(service, 0, (const ProtobufCMessage *) input, (ProtobufCClosure) closure, closure_data);
+}
+void pinternal_service__get_wallet(ProtobufCService *service,
+                                   const PEmpty *input,
+                                   PWallet_Closure closure,
+                                   void *closure_data)
+{
+  assert(service->descriptor == &pinternal_service__descriptor);
+  service->invoke(service, 1, (const ProtobufCMessage *) input, (ProtobufCClosure) closure, closure_data);
+}
+void pinternal_service__init (PInternalService_Service *service,
+                              PInternalService_ServiceDestroy destroy)
+{
+  protobuf_c_service_generated_init (&service->base,
+                                     &pinternal_service__descriptor,
+                                     (ProtobufCServiceDestroy) destroy);
+}
