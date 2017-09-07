@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,12 +42,41 @@ int hash_block(struct Block *block) {
   return 0;
 }
 
+// Block is valid if:
+// - Timestamp is stamped for a 2 hour drift
+// - The first TX is a generational TX
+// - TXs don't share any hash IDs
+// - TXs don't have any same TXINs referencing the same txout + id
+// - TXs TXINs reference UXTOs
+// - The block hash is valid
+// - The merkle root is valid
+//
+// Returns 0 if invalid, 1 is valid.
 int valid_block(struct Block *block) {
+  // Block must have a non-zero number of TXs.
+  if (block->transaction_count < 1) {
+    return false;
+  }
+
+  // First TX must always be a generational TX.
+  if (is_generation_tx(block->transactions[0]) != 1) {
+    return false;
+  }
+
+  // For each TX, compare to the other TXs that:
+  // - No other TX shares the same hash ID
+  // - No other TX shares the same TXIN referencing the same txout + id
   for (int first_tx_index = 0; first_tx_index < block->transaction_count; first_tx_index++) {
     struct Transaction *first_tx = block->transactions[first_tx_index];
 
+    // Can't have more than one generational TX.
+    if ((first_tx_index != 0) && is_generation_tx(first_tx)) {
+      return false;
+    }
+
+    // Must be a valid TX.
     if (valid_transaction(first_tx) != 0) {
-      return 0;
+      return false;
     }
 
     for (int second_tx_index = 0; second_tx_index < block->transaction_count; second_tx_index++) {
@@ -54,7 +84,7 @@ int valid_block(struct Block *block) {
 
       // TXs can not have duplicate transaction hash IDs
       if ((first_tx_index != second_tx_index) && memcmp(block->transactions[first_tx_index], block->transactions[second_tx_index], 32)) {
-        return 0;
+        return false;
       }
 
       // TXs cannot reference the same txout id + index
@@ -65,18 +95,24 @@ int valid_block(struct Block *block) {
           struct InputTransaction *txin_second = second_tx->txins[second_txin_index];
 
           if ((memcmp(txin_first->transaction, txin_second->transaction, 32) == 0) && (txin_first->txout_index == txin_second->txout_index)) {
-            return 0;
+            return false;
           }
         }
       }
     }
   }
 
-  if (valid_merkle_root(block) != 0) {
-    return 0;
+  // Block hash must be valid
+  if (valid_block_hash(block) != 0) {
+    return false;
   }
 
-  return 1;
+  // Merkle root must be valid
+  if (valid_merkle_root(block) != 0) {
+    return false;
+  }
+
+  return true;
 }
 
 int valid_merkle_root(struct Block *block) {

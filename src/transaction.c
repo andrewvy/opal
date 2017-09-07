@@ -99,6 +99,8 @@ int valid_transaction(struct Transaction *tx) {
 
 int do_txins_reference_unspent_txouts(struct Transaction *tx) {
   int valid_txins = 0;
+  int input_money = 0;
+  int required_money = 0;
 
   for (int i = 0; i < tx->txin_count; i++) {
     struct InputTransaction *txin = tx->txins[i];
@@ -111,6 +113,7 @@ int do_txins_reference_unspent_txouts(struct Transaction *tx) {
         PUnspentOutputTransaction *unspent_txout = unspent_tx->unspent_txouts[txin->txout_index];
 
         if (unspent_txout->spent == 0) {
+          input_money += unspent_txout->amount;
           valid_txins++;
         }
       }
@@ -119,7 +122,12 @@ int do_txins_reference_unspent_txouts(struct Transaction *tx) {
     }
   }
 
-  return (valid_txins == tx->txin_count);
+  for (int i = 0; i < tx->txout_count; i++) {
+    struct OutputTransaction *txout = tx->txouts[i];
+    required_money += txout->amount;
+  }
+
+  return (valid_txins == tx->txin_count) && (input_money == required_money);
 }
 
 int is_generation_tx(struct Transaction *tx) {

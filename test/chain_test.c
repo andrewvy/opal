@@ -311,6 +311,93 @@ TEST inserting_block_into_blockchain_marks_txouts_as_spent(void) {
   }
 }
 
+TEST tx_is_valid_only_if_it_has_money_unspent(void) {
+  uint8_t transaction[32] = {
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00
+  };
+
+  uint8_t address[32] = {
+    0x01, 0x3e, 0x46, 0xa5,
+    0xc6, 0x99, 0x4e, 0x35,
+    0x55, 0x50, 0x1c, 0xba,
+    0xc0, 0x7c, 0x06, 0x77
+  };
+
+  struct InputTransaction *txin = malloc(sizeof(struct InputTransaction));
+  struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
+
+  txin->txout_index = 0;
+  txout->amount = 50;
+  memcpy(txin->transaction, transaction, 32);
+  memcpy(txout->address, address, 32);
+
+  struct Transaction *tx = malloc(sizeof(struct Transaction));
+  tx->txout_count = 1;
+  tx->txouts = malloc(sizeof(struct OutputTransaction *) * 1);
+  tx->txouts[0] = txout;
+
+  unsigned char pk[crypto_sign_PUBLICKEYBYTES];
+  unsigned char sk[crypto_sign_SECRETKEYBYTES];
+
+  crypto_sign_keypair(pk, sk);
+  sign_txin(txin, tx, pk, sk);
+
+  tx->txin_count = 1;
+  tx->txins = malloc(sizeof(struct InputTransaction *) * 1);
+  tx->txins[0] = txin;
+  compute_self_tx_id(tx);
+
+  struct Block *block = make_block();
+  block->transaction_count = 1;
+  block->transactions = malloc(sizeof(struct Transaction *) * 1);
+  block->transactions[0] = tx;
+
+  insert_block_into_blockchain(block);
+  PUnspentTransaction *unspent_tx = get_unspent_tx_from_index(tx->id);
+  free_block(block);
+
+  if (unspent_tx != NULL) {
+    ASSERT(unspent_tx->n_unspent_txouts == 1);
+    ASSERT(unspent_tx->unspent_txouts[0]->spent == 0);
+
+    struct InputTransaction *txin_2 = malloc(sizeof(struct InputTransaction));
+    struct OutputTransaction *txout_2 = malloc(sizeof(struct OutputTransaction));
+
+    txin_2->txout_index = 0;
+    txout_2->amount = 50;
+    memcpy(txin_2->transaction, unspent_tx->id.data, 32);
+    memcpy(txout_2->address, address, 32);
+
+    struct Transaction *tx_2 = malloc(sizeof(struct Transaction));
+    tx_2->txout_count = 1;
+    tx_2->txouts = malloc(sizeof(struct OutputTransaction *) * 1);
+    tx_2->txouts[0] = txout_2;
+
+    crypto_sign_keypair(pk, sk);
+    sign_txin(txin_2, tx_2, pk, sk);
+
+    tx_2->txin_count = 1;
+    tx_2->txins = malloc(sizeof(struct InputTransaction *) * 1);
+    tx_2->txins[0] = txin_2;
+    compute_self_tx_id(tx_2);
+
+    ASSERT(valid_transaction(tx_2) == 1);
+
+    free_proto_unspent_transaction(unspent_tx);
+
+    PASS();
+  } else {
+    FAIL();
+  }
+}
+
 GREATEST_SUITE(chain_suite) {
   RUN_TEST(can_insert_block_into_blockchain);
   RUN_TEST(inserting_block_into_blockchain_also_inserts_tx);
@@ -319,4 +406,5 @@ GREATEST_SUITE(chain_suite) {
   RUN_TEST(can_delete_tx_from_index);
   RUN_TEST(can_insert_unspent_tx_into_index);
   RUN_TEST(inserting_block_into_blockchain_marks_txouts_as_spent);
+  RUN_TEST(tx_is_valid_only_if_it_has_money_unspent);
 }
