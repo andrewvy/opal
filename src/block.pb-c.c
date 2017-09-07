@@ -142,6 +142,51 @@ void   ptransaction__free_unpacked
   assert(message->base.descriptor == &ptransaction__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   punspent_output_transaction__init
+                     (PUnspentOutputTransaction         *message)
+{
+  static const PUnspentOutputTransaction init_value = PUNSPENT_OUTPUT_TRANSACTION__INIT;
+  *message = init_value;
+}
+size_t punspent_output_transaction__get_packed_size
+                     (const PUnspentOutputTransaction *message)
+{
+  assert(message->base.descriptor == &punspent_output_transaction__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t punspent_output_transaction__pack
+                     (const PUnspentOutputTransaction *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &punspent_output_transaction__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t punspent_output_transaction__pack_to_buffer
+                     (const PUnspentOutputTransaction *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &punspent_output_transaction__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+PUnspentOutputTransaction *
+       punspent_output_transaction__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (PUnspentOutputTransaction *)
+     protobuf_c_message_unpack (&punspent_output_transaction__descriptor,
+                                allocator, len, data);
+}
+void   punspent_output_transaction__free_unpacked
+                     (PUnspentOutputTransaction *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &punspent_output_transaction__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   punspent_transaction__init
                      (PUnspentTransaction         *message)
 {
@@ -424,6 +469,70 @@ const ProtobufCMessageDescriptor ptransaction__descriptor =
   (ProtobufCMessageInit) ptransaction__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+static const ProtobufCFieldDescriptor punspent_output_transaction__field_descriptors[3] =
+{
+  {
+    "amount",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(PUnspentOutputTransaction, amount),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "address",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(PUnspentOutputTransaction, address),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "spent",
+    3,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_BOOL,
+    0,   /* quantifier_offset */
+    offsetof(PUnspentOutputTransaction, spent),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned punspent_output_transaction__field_indices_by_name[] = {
+  1,   /* field[1] = address */
+  0,   /* field[0] = amount */
+  2,   /* field[2] = spent */
+};
+static const ProtobufCIntRange punspent_output_transaction__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 3 }
+};
+const ProtobufCMessageDescriptor punspent_output_transaction__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "PUnspentOutputTransaction",
+  "PUnspentOutputTransaction",
+  "PUnspentOutputTransaction",
+  "",
+  sizeof(PUnspentOutputTransaction),
+  3,
+  punspent_output_transaction__field_descriptors,
+  punspent_output_transaction__field_indices_by_name,
+  1,  punspent_output_transaction__number_ranges,
+  (ProtobufCMessageInit) punspent_output_transaction__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 static const ProtobufCFieldDescriptor punspent_transaction__field_descriptors[3] =
 {
   {
@@ -457,7 +566,7 @@ static const ProtobufCFieldDescriptor punspent_transaction__field_descriptors[3]
     PROTOBUF_C_TYPE_MESSAGE,
     offsetof(PUnspentTransaction, n_unspent_txouts),
     offsetof(PUnspentTransaction, unspent_txouts),
-    &poutput_transaction__descriptor,
+    &punspent_output_transaction__descriptor,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */

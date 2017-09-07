@@ -82,13 +82,29 @@ int get_tx_sign_header(uint8_t *header, struct Transaction *tx) {
  * - It has TXINs that reference valid unspent TXOUTs
  */
 int valid_transaction(struct Transaction *tx) {
-  return (
-    is_generation_tx(tx)
-  );
+  if (tx->txin_count > 0 && tx->txout_count > 0) {
+    return (
+      is_generation_tx(tx) || (
+        tx->txin_count > 0 &&
+        tx->txout_count > 0
+        // do_txins_reference_unspent_txouts(tx)
+      )
+    );
+  } else {
+    return 0;
+  }
 }
 
+// int do_txins_reference_unspent_txouts(struct Transaction *tx) {
+//   for (int i = 0; i < tx->txin_count; i++) {
+//     struct InputTransaction *txin = tx->txins[i];
+//   }
+//
+//   return 0;
+// }
+
 int is_generation_tx(struct Transaction *tx) {
-  return (tx->txin_count == 1 && tx->txout_count == 1 && memcpy(tx->id, zero_hash, 32) == 0);
+  return (tx->txin_count == 1 && tx->txout_count == 1 && memcmp(tx->txins[0]->transaction, zero_hash, 32) == 0);
 }
 
 int compute_tx_id(uint8_t *header, struct Transaction *tx) {
@@ -174,14 +190,16 @@ PUnspentTransaction *unspent_transaction_to_proto(struct Transaction *tx) {
   msg->unspent_txouts = malloc(sizeof(POutputTransaction *) * msg->n_unspent_txouts);
 
   for (int i = 0; i < msg->n_unspent_txouts; i++) {
-    msg->unspent_txouts[i] = malloc(sizeof(POutputTransaction));
-    poutput_transaction__init(msg->unspent_txouts[i]);
+    msg->unspent_txouts[i] = malloc(sizeof(PUnspentOutputTransaction));
+    punspent_output_transaction__init(msg->unspent_txouts[i]);
 
     msg->unspent_txouts[i]->amount = tx->txouts[i]->amount;
 
     msg->unspent_txouts[i]->address.len = 32;
     msg->unspent_txouts[i]->address.data = malloc(sizeof(uint8_t) * 32);
     memcpy(msg->unspent_txouts[i]->address.data, tx->txouts[i]->address, 32);
+
+    msg->unspent_txouts[i]->spent = 0;
   }
 
   return msg;
@@ -211,6 +229,16 @@ int unspent_transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, st
   return 0;
 }
 
+int proto_unspent_transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, PUnspentTransaction *msg) {
+  unsigned int len = punspent_transaction__get_packed_size(msg);
+  *buffer_len = len;
+
+  *buffer = malloc(len);
+  punspent_transaction__pack(msg, *buffer);
+
+  return 0;
+}
+
 struct InputTransaction *txin_from_proto(PInputTransaction *proto_txin) {
   struct InputTransaction *txin = malloc(sizeof(struct InputTransaction));
 
@@ -223,6 +251,15 @@ struct InputTransaction *txin_from_proto(PInputTransaction *proto_txin) {
 }
 
 struct OutputTransaction *txout_from_proto(POutputTransaction *proto_txout) {
+  struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
+
+  txout->amount = proto_txout->amount;
+  memcpy(txout->address, proto_txout->address.data, 32);
+
+  return txout;
+}
+
+struct OutputTransaction *unspent_txout_from_proto(PUnspentOutputTransaction *proto_txout) {
   struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
 
   txout->amount = proto_txout->amount;
@@ -252,22 +289,6 @@ struct Transaction *transaction_from_proto(PTransaction *proto_tx) {
   return tx;
 }
 
-struct Transaction *unspent_transaction_from_proto(PUnspentTransaction *proto_unspent_tx) {
-  struct Transaction *tx = malloc(sizeof(struct Transaction));
-
-  memcpy(tx->id, proto_unspent_tx->id.data, 32);
-
-  tx->txin_count = 0;
-  tx->txout_count = proto_unspent_tx->n_unspent_txouts;
-  tx->txouts = malloc(sizeof(struct OutputTransaction *) * tx->txout_count);
-
-  for (int i = 0; i < tx->txout_count; i++) {
-    tx->txouts[i] = txout_from_proto(proto_unspent_tx->unspent_txouts[i]);
-  }
-
-  return tx;
-}
-
 struct Transaction *transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
   PTransaction *proto_tx = ptransaction__unpack(NULL, buffer_len, buffer);
   struct Transaction *tx = transaction_from_proto(proto_tx);
@@ -276,12 +297,9 @@ struct Transaction *transaction_from_serialized(uint8_t *buffer, uint32_t buffer
   return tx;
 }
 
-struct Transaction *unspent_transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
+PUnspentTransaction *unspent_transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len) {
   PUnspentTransaction *proto_unspent_tx = punspent_transaction__unpack(NULL, buffer_len, buffer);
-  struct Transaction *tx = unspent_transaction_from_proto(proto_unspent_tx);
-  punspent_transaction__free_unpacked(proto_unspent_tx, NULL);
-
-  return tx;
+  return proto_unspent_tx;
 }
 
 int free_proto_transaction(PTransaction *proto_transaction) {

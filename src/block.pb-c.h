@@ -18,6 +18,7 @@ PROTOBUF_C__BEGIN_DECLS
 typedef struct _PInputTransaction PInputTransaction;
 typedef struct _POutputTransaction POutputTransaction;
 typedef struct _PTransaction PTransaction;
+typedef struct _PUnspentOutputTransaction PUnspentOutputTransaction;
 typedef struct _PUnspentTransaction PUnspentTransaction;
 typedef struct _PBlock PBlock;
 
@@ -65,13 +66,25 @@ struct  _PTransaction
     , {0,NULL}, 0,NULL, 0,NULL }
 
 
+struct  _PUnspentOutputTransaction
+{
+  ProtobufCMessage base;
+  int32_t amount;
+  ProtobufCBinaryData address;
+  protobuf_c_boolean spent;
+};
+#define PUNSPENT_OUTPUT_TRANSACTION__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&punspent_output_transaction__descriptor) \
+    , 0, {0,NULL}, 0 }
+
+
 struct  _PUnspentTransaction
 {
   ProtobufCMessage base;
   ProtobufCBinaryData id;
   protobuf_c_boolean coinbase;
   size_t n_unspent_txouts;
-  POutputTransaction **unspent_txouts;
+  PUnspentOutputTransaction **unspent_txouts;
 };
 #define PUNSPENT_TRANSACTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&punspent_transaction__descriptor) \
@@ -153,6 +166,25 @@ PTransaction *
 void   ptransaction__free_unpacked
                      (PTransaction *message,
                       ProtobufCAllocator *allocator);
+/* PUnspentOutputTransaction methods */
+void   punspent_output_transaction__init
+                     (PUnspentOutputTransaction         *message);
+size_t punspent_output_transaction__get_packed_size
+                     (const PUnspentOutputTransaction   *message);
+size_t punspent_output_transaction__pack
+                     (const PUnspentOutputTransaction   *message,
+                      uint8_t             *out);
+size_t punspent_output_transaction__pack_to_buffer
+                     (const PUnspentOutputTransaction   *message,
+                      ProtobufCBuffer     *buffer);
+PUnspentOutputTransaction *
+       punspent_output_transaction__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   punspent_output_transaction__free_unpacked
+                     (PUnspentOutputTransaction *message,
+                      ProtobufCAllocator *allocator);
 /* PUnspentTransaction methods */
 void   punspent_transaction__init
                      (PUnspentTransaction         *message);
@@ -202,6 +234,9 @@ typedef void (*POutputTransaction_Closure)
 typedef void (*PTransaction_Closure)
                  (const PTransaction *message,
                   void *closure_data);
+typedef void (*PUnspentOutputTransaction_Closure)
+                 (const PUnspentOutputTransaction *message,
+                  void *closure_data);
 typedef void (*PUnspentTransaction_Closure)
                  (const PUnspentTransaction *message,
                   void *closure_data);
@@ -217,6 +252,7 @@ typedef void (*PBlock_Closure)
 extern const ProtobufCMessageDescriptor pinput_transaction__descriptor;
 extern const ProtobufCMessageDescriptor poutput_transaction__descriptor;
 extern const ProtobufCMessageDescriptor ptransaction__descriptor;
+extern const ProtobufCMessageDescriptor punspent_output_transaction__descriptor;
 extern const ProtobufCMessageDescriptor punspent_transaction__descriptor;
 extern const ProtobufCMessageDescriptor pblock__descriptor;
 

@@ -66,12 +66,13 @@ int compute_self_tx_id(struct Transaction *tx);
 
 PTransaction *transaction_to_proto(struct Transaction *tx);
 PUnspentTransaction *unspent_transaction_to_proto(struct Transaction *tx);
+struct OutputTransaction *txout_from_proto(POutputTransaction *proto_txout);
 struct Transaction *transaction_from_proto(PTransaction *proto_tx);
-struct Transaction *unspent_transaction_from_proto(PUnspentTransaction *proto_unspent_tx);
 int unspent_transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Transaction *tx);
+int proto_unspent_transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, PUnspentTransaction *tx);
 int transaction_to_serialized(uint8_t **buffer, uint32_t *buffer_len, struct Transaction *tx);
 struct Transaction *transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len);
-struct Transaction *unspent_transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len);
+PUnspentTransaction *unspent_transaction_from_serialized(uint8_t *buffer, uint32_t buffer_len);
 
 int free_proto_transaction(PTransaction *proto_transaction);
 int free_proto_unspent_transaction(PUnspentTransaction *proto_unspent_tx);

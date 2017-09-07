@@ -4,6 +4,7 @@
 
 #include <leveldb/c.h>
 
+#include "block.pb-c.h"
 #include "block.h"
 #include "chain.h"
 
@@ -54,6 +55,10 @@ int init_blockchain() {
   return 0;
 }
 
+/* After we insert block into blockchain
+ * Mark unspent txouts as spent for current txins
+ * Add current TX w/ unspent txouts to unspent index
+ */
 int insert_block_into_blockchain(struct Block *block) {
   char *err = NULL;
   uint8_t key[33];
@@ -70,7 +75,49 @@ int insert_block_into_blockchain(struct Block *block) {
   free(buffer);
 
   for (int i = 0; i < block->transaction_count; i++) {
-    insert_tx_into_index(key, block->transactions[i]);
+    struct Transaction *tx = block->transactions[i];
+
+    insert_tx_into_index(key, tx);
+    insert_unspent_tx_into_index(tx);
+
+    if (is_generation_tx(tx)) {
+      continue;
+    }
+
+    // Mark unspent txouts as spent for current txins
+    for (int txin_index = 0; txin_index < tx->txin_count; txin_index++) {
+      struct InputTransaction *txin = tx->txins[txin_index];
+      PUnspentTransaction *unspent_tx = get_unspent_tx_from_index(txin->transaction);
+
+      if (((unspent_tx->n_unspent_txouts - 1) < txin->txout_index) || unspent_tx->unspent_txouts[txin->txout_index] == NULL) {
+        free_proto_unspent_transaction(unspent_tx);
+        fprintf(stderr, "A txin tried to mark a unspent txout as spent, but it was not found\n");
+        continue;
+      } else {
+        PUnspentOutputTransaction *unspent_txout = unspent_tx->unspent_txouts[txin->txout_index];
+        if (unspent_txout->spent == 1) {
+          free_proto_unspent_transaction(unspent_tx);
+          fprintf(stderr, "A txin tried to mark a unspent txout as spent, but it was already spent\n");
+          continue;
+        }
+
+        unspent_txout->spent = 1;
+
+        int spent_txs = 0;
+        for (int j = 0; j < unspent_tx->n_unspent_txouts; j++) {
+          if (unspent_txout->spent == 1)
+            spent_txs++;
+        }
+
+        if (spent_txs == unspent_tx->n_unspent_txouts) {
+          delete_unspent_tx_from_index(unspent_tx->id.data);
+        } else {
+          insert_proto_unspent_tx_into_index(unspent_tx);
+        }
+
+        free_proto_unspent_transaction(unspent_tx);
+      }
+    }
   }
 
   if (err != NULL) {
@@ -158,7 +205,33 @@ int insert_unspent_tx_into_index(struct Transaction *tx) {
   return 0;
 }
 
-struct Transaction *get_unspent_tx_from_index(uint8_t *tx_id) {
+int insert_proto_unspent_tx_into_index(PUnspentTransaction *tx) {
+  char *err = NULL;
+  uint8_t key[33];
+  get_unspent_tx_key(key, tx->id.data);
+
+  uint8_t *buffer = NULL;
+  uint32_t buffer_len = 0;
+  proto_unspent_transaction_to_serialized(&buffer, &buffer_len, tx);
+
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_put(db, woptions, (char *) key, 33, (char *) buffer, buffer_len, &err);
+
+  free(buffer);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not insert tx into blockchain: %s\n", err);
+    return 1;
+  }
+
+  leveldb_free(err);
+  leveldb_free(woptions);
+
+  return 0;
+}
+
+
+PUnspentTransaction *get_unspent_tx_from_index(uint8_t *tx_id) {
   char *err = NULL;
   uint8_t key[33];
   get_unspent_tx_key(key, tx_id);
@@ -175,7 +248,7 @@ struct Transaction *get_unspent_tx_from_index(uint8_t *tx_id) {
     return NULL;
   }
 
-  struct Transaction *tx = unspent_transaction_from_serialized(serialized_tx, read_len);
+  PUnspentTransaction *tx = unspent_transaction_from_serialized(serialized_tx, read_len);
 
   leveldb_free(serialized_tx);
   leveldb_free(err);
