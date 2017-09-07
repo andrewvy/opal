@@ -60,6 +60,7 @@ int get_tx_sign_header(uint8_t *header, struct Transaction *tx);
 
 int valid_transaction(struct Transaction *tx);
 int is_generation_tx(struct Transaction *tx);
+int do_txins_reference_unspent_txouts(struct Transaction *tx);
 
 int compute_tx_id(uint8_t *header, struct Transaction *tx);
 int compute_self_tx_id(struct Transaction *tx);

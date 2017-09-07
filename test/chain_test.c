@@ -263,12 +263,52 @@ TEST inserting_block_into_blockchain_marks_txouts_as_spent(void) {
   free_block(block);
 
   if (unspent_tx != NULL) {
+    ASSERT(unspent_tx->n_unspent_txouts == 1);
+    ASSERT(unspent_tx->unspent_txouts[0]->spent == 0);
+
+    struct InputTransaction *txin_2 = malloc(sizeof(struct InputTransaction));
+    struct OutputTransaction *txout_2 = malloc(sizeof(struct OutputTransaction));
+
+    txin_2->txout_index = 0;
+    txout_2->amount = 50;
+    memcpy(txin_2->transaction, unspent_tx->id.data, 32);
+    memcpy(txout_2->address, address, 32);
+
+    struct Transaction *tx_2 = malloc(sizeof(struct Transaction));
+    tx_2->txout_count = 1;
+    tx_2->txouts = malloc(sizeof(struct OutputTransaction *) * 1);
+    tx_2->txouts[0] = txout_2;
+
+    crypto_sign_keypair(pk, sk);
+    sign_txin(txin_2, tx_2, pk, sk);
+
+    tx_2->txin_count = 1;
+    tx_2->txins = malloc(sizeof(struct InputTransaction *) * 1);
+    tx_2->txins[0] = txin_2;
+    compute_self_tx_id(tx_2);
+
+    struct Block *block_2 = make_block();
+    block_2->transaction_count = 1;
+    block_2->transactions = malloc(sizeof(struct Transaction *) * 1);
+    block_2->transactions[0] = tx_2;
+
+    insert_block_into_blockchain(block_2);
+
+    PUnspentTransaction *unspent_tx_2 = get_unspent_tx_from_index(unspent_tx->id.data);
+
+    ASSERT(unspent_tx_2 == NULL);
+
+    if (unspent_tx_2 != NULL) {
+      free_proto_unspent_transaction(unspent_tx_2);
+    }
+
     free_proto_unspent_transaction(unspent_tx);
+    free_block(block_2);
+
     PASS();
   } else {
     FAIL();
   }
-
 }
 
 GREATEST_SUITE(chain_suite) {

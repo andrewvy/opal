@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "chain.h"
 #include "block.pb-c.h"
 #include "transaction.h"
 
@@ -80,14 +81,15 @@ int get_tx_sign_header(uint8_t *header, struct Transaction *tx) {
  * A transaction is valid if:
  * - It is a generation tx
  * - It has TXINs that reference valid unspent TXOUTs
+ * - Its combined TXIN UTXO values equal the combined amount of TXOUTs.
  */
 int valid_transaction(struct Transaction *tx) {
   if (tx->txin_count > 0 && tx->txout_count > 0) {
     return (
       is_generation_tx(tx) || (
         tx->txin_count > 0 &&
-        tx->txout_count > 0
-        // do_txins_reference_unspent_txouts(tx)
+        tx->txout_count > 0 &&
+        do_txins_reference_unspent_txouts(tx)
       )
     );
   } else {
@@ -95,13 +97,30 @@ int valid_transaction(struct Transaction *tx) {
   }
 }
 
-// int do_txins_reference_unspent_txouts(struct Transaction *tx) {
-//   for (int i = 0; i < tx->txin_count; i++) {
-//     struct InputTransaction *txin = tx->txins[i];
-//   }
-//
-//   return 0;
-// }
+int do_txins_reference_unspent_txouts(struct Transaction *tx) {
+  int valid_txins = 0;
+
+  for (int i = 0; i < tx->txin_count; i++) {
+    struct InputTransaction *txin = tx->txins[i];
+    PUnspentTransaction *unspent_tx = get_unspent_tx_from_index(txin->transaction);
+
+    if (unspent_tx != NULL) {
+      if (((unspent_tx->n_unspent_txouts - 1) < txin->txout_index) ||
+          (unspent_tx->unspent_txouts[txin->txout_index] == NULL)) {
+      } else {
+        PUnspentOutputTransaction *unspent_txout = unspent_tx->unspent_txouts[txin->txout_index];
+
+        if (unspent_txout->spent == 0) {
+          valid_txins++;
+        }
+      }
+
+      free_proto_unspent_transaction(unspent_tx);
+    }
+  }
+
+  return (valid_txins == tx->txin_count);
+}
 
 int is_generation_tx(struct Transaction *tx) {
   return (tx->txin_count == 1 && tx->txout_count == 1 && memcmp(tx->txins[0]->transaction, zero_hash, 32) == 0);
