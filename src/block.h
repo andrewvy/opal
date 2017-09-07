@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "transaction.h"
-#include "block.pb-c.h"
+#include "opal.pb-c.h"
 
 // MAX_BLOCK_SIZE: Max serialized size of a block (1MB)
 #define MAX_BLOCK_SIZE 1000000

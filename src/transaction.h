@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <sodium.h>
 
-#include "block.pb-c.h"
+#include "opal.pb-c.h"
 
 /*
  * Transactions can contain multiple InputTXs and multiple OutputTXs.

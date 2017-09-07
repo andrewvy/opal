@@ -4,7 +4,7 @@
 
 #include <leveldb/c.h>
 
-#include "block.pb-c.h"
+#include "opal.pb-c.h"
 #include "block.h"
 #include "chain.h"
 

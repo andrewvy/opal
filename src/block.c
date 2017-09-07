@@ -5,7 +5,7 @@
 #include <sodium.h>
 
 #include "block.h"
-#include "block.pb-c.h"
+#include "opal.pb-c.h"
 
 #include "merkle.h"
 

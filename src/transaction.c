@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "chain.h"
-#include "block.pb-c.h"
+#include "opal.pb-c.h"
 #include "transaction.h"
 
 uint8_t zero_hash[32] = {

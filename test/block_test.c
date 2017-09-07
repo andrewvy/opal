@@ -3,7 +3,7 @@
 
 #include "deps/greatest.h"
 
-#include "../src/block.pb-c.h"
+#include "../src/opal.pb-c.h"
 #include "../src/block.h"
 #include "../src/transaction.h"
 
