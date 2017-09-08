@@ -10,14 +10,15 @@
 #include "net.h"
 #include "chain.h"
 #include "miner.h"
+#include "client.h"
 
 enum command {
   CMD_NONE,
   CMD_HELP,
   CMD_VERSION,
   CMD_GENESIS,
+  CMD_GET_WALLET,
   CMD_NEW_WALLET,
-  CMD_READ_WALLET,
   CMD_SERVER,
   CMD_BLOCKHEIGHT,
   CMD_MINE
@@ -28,11 +29,11 @@ static struct opal_command commands[] = {
   {"help", CMD_HELP},
   {"version", CMD_VERSION},
   {"genesis", CMD_GENESIS},
+  {"wallet", CMD_GET_WALLET},
   {"new_wallet", CMD_NEW_WALLET},
-  {"wallet", CMD_READ_WALLET},
   {"server", CMD_SERVER},
   {"blockheight", CMD_BLOCKHEIGHT},
-  {"mine", CMD_MINE}
+  {"mine", CMD_MINE},
 };
 
 #define MAX_COMMANDS (sizeof(commands) / sizeof(struct opal_command))
@@ -53,8 +54,6 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  init_blockchain();
-
   if (argc > 1) {
     switch(command(argv[1])) {
       case CMD_NONE: {
@@ -69,6 +68,7 @@ int main(int argc, char **argv) {
         break;
       }
       case CMD_GENESIS: {
+        init_blockchain();
         struct Block *block = make_block();
         block->timestamp = genesis_block.timestamp;
         hash_block(block);
@@ -91,24 +91,27 @@ int main(int argc, char **argv) {
         free_block(block);
         break;
       }
+      case CMD_GET_WALLET: {
+        rpc_get_wallet();
+        break;
+      }
       case CMD_NEW_WALLET: {
         new_wallet();
         break;
       }
-      case CMD_READ_WALLET: {
-        read_wallet();
-        break;
-      }
       case CMD_SERVER: {
+        init_blockchain();
         start_server();
         break;
       }
       case CMD_BLOCKHEIGHT: {
+        init_blockchain();
         uint32_t height = get_block_height();
         printf("Current local blockheight: %d\n", height);
         break;
       }
       case CMD_MINE: {
+        init_blockchain();
         start_mining();
         break;
       }

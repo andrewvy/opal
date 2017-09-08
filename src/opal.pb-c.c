@@ -322,51 +322,6 @@ void   pwallet__free_unpacked
   assert(message->base.descriptor == &pwallet__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   pversion__init
-                     (PVersion         *message)
-{
-  static const PVersion init_value = PVERSION__INIT;
-  *message = init_value;
-}
-size_t pversion__get_packed_size
-                     (const PVersion *message)
-{
-  assert(message->base.descriptor == &pversion__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t pversion__pack
-                     (const PVersion *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &pversion__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t pversion__pack_to_buffer
-                     (const PVersion *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &pversion__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-PVersion *
-       pversion__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (PVersion *)
-     protobuf_c_message_unpack (&pversion__descriptor,
-                                allocator, len, data);
-}
-void   pversion__free_unpacked
-                     (PVersion *message,
-                      ProtobufCAllocator *allocator)
-{
-  if(!message)
-    return;
-  assert(message->base.descriptor == &pversion__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
 void   pempty__init
                      (PEmpty         *message)
 {
@@ -952,11 +907,23 @@ const ProtobufCMessageDescriptor pblock__descriptor =
   (ProtobufCMessageInit) pblock__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor pwallet__field_descriptors[3] =
+static const ProtobufCFieldDescriptor pwallet__field_descriptors[4] =
 {
   {
-    "public_key",
+    "secret_key",
     1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_BYTES,
+    0,   /* quantifier_offset */
+    offsetof(PWallet, secret_key),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "public_key",
+    2,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_BYTES,
     0,   /* quantifier_offset */
@@ -968,7 +935,7 @@ static const ProtobufCFieldDescriptor pwallet__field_descriptors[3] =
   },
   {
     "address",
-    2,
+    3,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_BYTES,
     0,   /* quantifier_offset */
@@ -980,7 +947,7 @@ static const ProtobufCFieldDescriptor pwallet__field_descriptors[3] =
   },
   {
     "balance",
-    3,
+    4,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_INT32,
     0,   /* quantifier_offset */
@@ -992,14 +959,15 @@ static const ProtobufCFieldDescriptor pwallet__field_descriptors[3] =
   },
 };
 static const unsigned pwallet__field_indices_by_name[] = {
-  1,   /* field[1] = address */
-  2,   /* field[2] = balance */
-  0,   /* field[0] = public_key */
+  2,   /* field[2] = address */
+  3,   /* field[3] = balance */
+  1,   /* field[1] = public_key */
+  0,   /* field[0] = secret_key */
 };
 static const ProtobufCIntRange pwallet__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor pwallet__descriptor =
 {
@@ -1009,49 +977,11 @@ const ProtobufCMessageDescriptor pwallet__descriptor =
   "PWallet",
   "",
   sizeof(PWallet),
-  3,
+  4,
   pwallet__field_descriptors,
   pwallet__field_indices_by_name,
   1,  pwallet__number_ranges,
   (ProtobufCMessageInit) pwallet__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor pversion__field_descriptors[1] =
-{
-  {
-    "version",
-    1,
-    PROTOBUF_C_LABEL_NONE,
-    PROTOBUF_C_TYPE_BYTES,
-    0,   /* quantifier_offset */
-    offsetof(PVersion, version),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned pversion__field_indices_by_name[] = {
-  0,   /* field[0] = version */
-};
-static const ProtobufCIntRange pversion__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 1 }
-};
-const ProtobufCMessageDescriptor pversion__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "PVersion",
-  "PVersion",
-  "PVersion",
-  "",
-  sizeof(PVersion),
-  1,
-  pversion__field_descriptors,
-  pversion__field_indices_by_name,
-  1,  pversion__number_ranges,
-  (ProtobufCMessageInit) pversion__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 #define pempty__field_descriptors NULL
@@ -1148,46 +1078,46 @@ const ProtobufCMessageDescriptor psend_transaction_response__descriptor =
   (ProtobufCMessageInit) psend_transaction_response__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCMethodDescriptor pinternal_service__method_descriptors[2] =
+static const ProtobufCMethodDescriptor pinternal__method_descriptors[2] =
 {
-  { "GetVersion", &pempty__descriptor, &pversion__descriptor },
   { "GetWallet", &pempty__descriptor, &pwallet__descriptor },
+  { "SendTransaction", &psend_transaction_request__descriptor, &psend_transaction_response__descriptor },
 };
-const unsigned pinternal_service__method_indices_by_name[] = {
-  0,        /* GetVersion */
-  1         /* GetWallet */
+const unsigned pinternal__method_indices_by_name[] = {
+  0,        /* GetWallet */
+  1         /* SendTransaction */
 };
-const ProtobufCServiceDescriptor pinternal_service__descriptor =
+const ProtobufCServiceDescriptor pinternal__descriptor =
 {
   PROTOBUF_C__SERVICE_DESCRIPTOR_MAGIC,
-  "PInternalService",
-  "PInternalService",
-  "PInternalService",
+  "PInternal",
+  "PInternal",
+  "PInternal",
   "",
   2,
-  pinternal_service__method_descriptors,
-  pinternal_service__method_indices_by_name
+  pinternal__method_descriptors,
+  pinternal__method_indices_by_name
 };
-void pinternal_service__get_version(ProtobufCService *service,
-                                    const PEmpty *input,
-                                    PVersion_Closure closure,
-                                    void *closure_data)
+void pinternal__get_wallet(ProtobufCService *service,
+                           const PEmpty *input,
+                           PWallet_Closure closure,
+                           void *closure_data)
 {
-  assert(service->descriptor == &pinternal_service__descriptor);
+  assert(service->descriptor == &pinternal__descriptor);
   service->invoke(service, 0, (const ProtobufCMessage *) input, (ProtobufCClosure) closure, closure_data);
 }
-void pinternal_service__get_wallet(ProtobufCService *service,
-                                   const PEmpty *input,
-                                   PWallet_Closure closure,
-                                   void *closure_data)
+void pinternal__send_transaction(ProtobufCService *service,
+                                 const PSendTransactionRequest *input,
+                                 PSendTransactionResponse_Closure closure,
+                                 void *closure_data)
 {
-  assert(service->descriptor == &pinternal_service__descriptor);
+  assert(service->descriptor == &pinternal__descriptor);
   service->invoke(service, 1, (const ProtobufCMessage *) input, (ProtobufCClosure) closure, closure_data);
 }
-void pinternal_service__init (PInternalService_Service *service,
-                              PInternalService_ServiceDestroy destroy)
+void pinternal__init (PInternal_Service *service,
+                      PInternal_ServiceDestroy destroy)
 {
   protobuf_c_service_generated_init (&service->base,
-                                     &pinternal_service__descriptor,
+                                     &pinternal__descriptor,
                                      (ProtobufCServiceDestroy) destroy);
 }

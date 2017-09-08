@@ -22,7 +22,6 @@ typedef struct _PUnspentOutputTransaction PUnspentOutputTransaction;
 typedef struct _PUnspentTransaction PUnspentTransaction;
 typedef struct _PBlock PBlock;
 typedef struct _PWallet PWallet;
-typedef struct _PVersion PVersion;
 typedef struct _PEmpty PEmpty;
 typedef struct _PSendTransactionRequest PSendTransactionRequest;
 typedef struct _PSendTransactionResponse PSendTransactionResponse;
@@ -117,23 +116,14 @@ struct  _PBlock
 struct  _PWallet
 {
   ProtobufCMessage base;
+  ProtobufCBinaryData secret_key;
   ProtobufCBinaryData public_key;
   ProtobufCBinaryData address;
   int32_t balance;
 };
 #define PWALLET__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&pwallet__descriptor) \
-    , {0,NULL}, {0,NULL}, 0 }
-
-
-struct  _PVersion
-{
-  ProtobufCMessage base;
-  ProtobufCBinaryData version;
-};
-#define PVERSION__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&pversion__descriptor) \
-    , {0,NULL} }
+    , {0,NULL}, {0,NULL}, {0,NULL}, 0 }
 
 
 struct  _PEmpty
@@ -298,25 +288,6 @@ PWallet *
 void   pwallet__free_unpacked
                      (PWallet *message,
                       ProtobufCAllocator *allocator);
-/* PVersion methods */
-void   pversion__init
-                     (PVersion         *message);
-size_t pversion__get_packed_size
-                     (const PVersion   *message);
-size_t pversion__pack
-                     (const PVersion   *message,
-                      uint8_t             *out);
-size_t pversion__pack_to_buffer
-                     (const PVersion   *message,
-                      ProtobufCBuffer     *buffer);
-PVersion *
-       pversion__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data);
-void   pversion__free_unpacked
-                     (PVersion *message,
-                      ProtobufCAllocator *allocator);
 /* PEmpty methods */
 void   pempty__init
                      (PEmpty         *message);
@@ -397,9 +368,6 @@ typedef void (*PBlock_Closure)
 typedef void (*PWallet_Closure)
                  (const PWallet *message,
                   void *closure_data);
-typedef void (*PVersion_Closure)
-                 (const PVersion *message,
-                  void *closure_data);
 typedef void (*PEmpty_Closure)
                  (const PEmpty *message,
                   void *closure_data);
@@ -412,36 +380,36 @@ typedef void (*PSendTransactionResponse_Closure)
 
 /* --- services --- */
 
-typedef struct _PInternalService_Service PInternalService_Service;
-struct _PInternalService_Service
+typedef struct _PInternal_Service PInternal_Service;
+struct _PInternal_Service
 {
   ProtobufCService base;
-  void (*get_version)(PInternalService_Service *service,
-                      const PEmpty *input,
-                      PVersion_Closure closure,
-                      void *closure_data);
-  void (*get_wallet)(PInternalService_Service *service,
+  void (*get_wallet)(PInternal_Service *service,
                      const PEmpty *input,
                      PWallet_Closure closure,
                      void *closure_data);
+  void (*send_transaction)(PInternal_Service *service,
+                           const PSendTransactionRequest *input,
+                           PSendTransactionResponse_Closure closure,
+                           void *closure_data);
 };
-typedef void (*PInternalService_ServiceDestroy)(PInternalService_Service *);
-void pinternal_service__init (PInternalService_Service *service,
-                              PInternalService_ServiceDestroy destroy);
-#define PINTERNAL_SERVICE__BASE_INIT \
-    { &pinternal_service__descriptor, protobuf_c_service_invoke_internal, NULL }
-#define PINTERNAL_SERVICE__INIT(function_prefix__) \
-    { PINTERNAL_SERVICE__BASE_INIT,\
-      function_prefix__ ## get_version,\
-      function_prefix__ ## get_wallet  }
-void pinternal_service__get_version(ProtobufCService *service,
-                                    const PEmpty *input,
-                                    PVersion_Closure closure,
-                                    void *closure_data);
-void pinternal_service__get_wallet(ProtobufCService *service,
-                                   const PEmpty *input,
-                                   PWallet_Closure closure,
-                                   void *closure_data);
+typedef void (*PInternal_ServiceDestroy)(PInternal_Service *);
+void pinternal__init (PInternal_Service *service,
+                      PInternal_ServiceDestroy destroy);
+#define PINTERNAL__BASE_INIT \
+    { &pinternal__descriptor, protobuf_c_service_invoke_internal, NULL }
+#define PINTERNAL__INIT(function_prefix__) \
+    { PINTERNAL__BASE_INIT,\
+      function_prefix__ ## get_wallet,\
+      function_prefix__ ## send_transaction  }
+void pinternal__get_wallet(ProtobufCService *service,
+                           const PEmpty *input,
+                           PWallet_Closure closure,
+                           void *closure_data);
+void pinternal__send_transaction(ProtobufCService *service,
+                                 const PSendTransactionRequest *input,
+                                 PSendTransactionResponse_Closure closure,
+                                 void *closure_data);
 
 /* --- descriptors --- */
 
@@ -452,11 +420,10 @@ extern const ProtobufCMessageDescriptor punspent_output_transaction__descriptor;
 extern const ProtobufCMessageDescriptor punspent_transaction__descriptor;
 extern const ProtobufCMessageDescriptor pblock__descriptor;
 extern const ProtobufCMessageDescriptor pwallet__descriptor;
-extern const ProtobufCMessageDescriptor pversion__descriptor;
 extern const ProtobufCMessageDescriptor pempty__descriptor;
 extern const ProtobufCMessageDescriptor psend_transaction_request__descriptor;
 extern const ProtobufCMessageDescriptor psend_transaction_response__descriptor;
-extern const ProtobufCServiceDescriptor pinternal_service__descriptor;
+extern const ProtobufCServiceDescriptor pinternal__descriptor;
 
 PROTOBUF_C__END_DECLS
 

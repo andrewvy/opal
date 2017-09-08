@@ -11,6 +11,8 @@ static int IS_MINING = 0;
 int start_mining() {
   IS_MINING = 1;
 
+  printf("Started mining...\n");
+
   while (1) {
     uint8_t *previous_hash = get_current_block_hash();
     struct Block *block = compute_next_block(previous_hash);
@@ -35,6 +37,7 @@ struct Block *compute_next_block(uint8_t *prev_block_hash) {
   hash_block(block);
   while (!valid_block_hash(block)) {
     block->nonce = nonce;
+
     hash_block(block);
     nonce++;
   }

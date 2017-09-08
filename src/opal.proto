@@ -46,9 +46,10 @@ message PBlock {
 }
 
 message PWallet {
-  bytes public_key = 1;
-  bytes address = 2;
-  int32 balance = 3;
+  bytes secret_key = 1;
+  bytes public_key = 2;
+  bytes address = 3;
+  int32 balance = 4;
 }
 
 message PEmpty {
@@ -62,7 +63,7 @@ message PSendTransactionResponse {
   bytes transaction_id = 1;
 }
 
-service PInternalService {
+service PInternal {
   rpc GetWallet (PEmpty) returns (PWallet);
   rpc SendTransaction (PSendTransactionRequest) returns (PSendTransactionResponse);
 }
