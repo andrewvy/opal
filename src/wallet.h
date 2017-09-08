@@ -10,10 +10,12 @@
 #define PROD_NET_ADDRESS_ID 0x01
 #define TEST_NET_ADDRESS_ID 0x03
 
-leveldb_t *open_wallet();
+int open_wallet();
+int close_wallet();
 int new_wallet();
 int public_key_to_address(unsigned char *address, unsigned char *pk);
 uint8_t get_address_id(uint8_t *address);
+int valid_address(uint8_t *address);
 
 PWallet *get_wallet();
 

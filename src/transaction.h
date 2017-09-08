@@ -23,6 +23,8 @@
  * - If you don't want to spend everything from an InputTX, you can create a new OutputTX to send back to yourself as leftover-change.
  */
 
+#include "wallet.h"
+
 #define TXIN_HEADER_SIZE (32 + 4)
 #define TXOUT_HEADER_SIZE (32 + 4)
 
@@ -40,7 +42,7 @@ struct InputTransaction {
 
 struct OutputTransaction {
   uint32_t amount;
-  uint8_t address[32];
+  uint8_t address[ADDRESS_SIZE];
 };
 
 struct Transaction {

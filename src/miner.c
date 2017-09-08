@@ -5,6 +5,7 @@
 #include "block.h"
 #include "chain.h"
 #include "miner.h"
+#include "wallet.h"
 
 static int IS_MINING = 0;
 
@@ -30,11 +31,46 @@ struct Block *compute_next_block(uint8_t *prev_block_hash) {
   uint32_t nonce = 0;
   time_t current_time = time(NULL);
 
-  struct Block *block = make_block();
-  memcpy(block->previous_hash, prev_block_hash, 32);
-  block->timestamp = current_time;
+  struct InputTransaction *txin = malloc(sizeof(struct InputTransaction));
+  struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
 
+  memset(txin->transaction, 0, 32);
+  txin->txout_index = get_block_height();
+  txout->amount = 50 * OPALITES_PER_OPAL;
+
+  PWallet *wallet = get_wallet();
+  memcpy(txout->address, wallet->address.data, ADDRESS_SIZE);
+  pwallet__free_unpacked(wallet, NULL);
+
+  struct Transaction *tx = malloc(sizeof(struct Transaction));
+  tx->txout_count = 1;
+  tx->txouts = malloc(sizeof(struct OutputTransaction *) * 1);
+  tx->txouts[0] = txout;
+
+  sign_txin(txin, tx, wallet->public_key.data, wallet->secret_key.data);
+
+  tx->txin_count = 1;
+  tx->txins = malloc(sizeof(struct InputTransaction *) * 1);
+  tx->txins[0] = txin;
+  compute_self_tx_id(tx);
+
+  char tx_digest[(32 * 2) + 1];
+  for (int i = 0; i < 32; i++) {
+    sprintf(&tx_digest[i*2], "%02x", (unsigned int) tx->id);
+  }
+
+  printf("Working on TX ID: %s\n", tx_digest);
+
+  struct Block *block = make_block();
+  block->transaction_count = 1;
+  block->transactions = malloc(sizeof(struct Transaction *) * 1);
+  block->transactions[0] = tx;
+  block->timestamp = current_time;
+  memcpy(block->previous_hash, get_current_block_hash(), 32);
+
+  compute_self_merkle_root(block);
   hash_block(block);
+
   while (!valid_block_hash(block)) {
     block->nonce = nonce;
 

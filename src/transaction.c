@@ -6,6 +6,7 @@
 #include "chain.h"
 #include "opal.pb-c.h"
 #include "transaction.h"
+#include "wallet.h"
 
 uint8_t zero_hash[32] = {
   0x00, 0x00, 0x00, 0x00,
@@ -47,7 +48,7 @@ int get_txin_header(uint8_t *header, struct InputTransaction *txin) {
 
 int get_txout_header(uint8_t *header, struct OutputTransaction *txout) {
   memcpy(header, &txout->amount, 4);
-  memcpy(header, &txout->address, 32);
+  memcpy(header, &txout->address, ADDRESS_SIZE);
   return 0;
 }
 
@@ -125,6 +126,10 @@ int do_txins_reference_unspent_txouts(struct Transaction *tx) {
   for (int i = 0; i < tx->txout_count; i++) {
     struct OutputTransaction *txout = tx->txouts[i];
     required_money += txout->amount;
+
+    if (valid_address(txout->address) == 0) {
+      return 0;
+    }
   }
 
   return (valid_txins == tx->txin_count) && (input_money == required_money);
@@ -196,9 +201,9 @@ PTransaction *transaction_to_proto(struct Transaction *tx) {
 
     msg->txouts[i]->amount = tx->txouts[i]->amount;
 
-    msg->txouts[i]->address.len = 32;
-    msg->txouts[i]->address.data = malloc(sizeof(uint8_t) * 32);
-    memcpy(msg->txouts[i]->address.data, tx->txouts[i]->address, 32);
+    msg->txouts[i]->address.len = ADDRESS_SIZE;
+    msg->txouts[i]->address.data = malloc(sizeof(uint8_t) * ADDRESS_SIZE);
+    memcpy(msg->txouts[i]->address.data, tx->txouts[i]->address, ADDRESS_SIZE);
   }
 
   return msg;
@@ -222,9 +227,9 @@ PUnspentTransaction *unspent_transaction_to_proto(struct Transaction *tx) {
 
     msg->unspent_txouts[i]->amount = tx->txouts[i]->amount;
 
-    msg->unspent_txouts[i]->address.len = 32;
-    msg->unspent_txouts[i]->address.data = malloc(sizeof(uint8_t) * 32);
-    memcpy(msg->unspent_txouts[i]->address.data, tx->txouts[i]->address, 32);
+    msg->unspent_txouts[i]->address.len = ADDRESS_SIZE;
+    msg->unspent_txouts[i]->address.data = malloc(sizeof(uint8_t) * ADDRESS_SIZE);
+    memcpy(msg->unspent_txouts[i]->address.data, tx->txouts[i]->address, ADDRESS_SIZE);
 
     msg->unspent_txouts[i]->spent = 0;
   }
@@ -281,7 +286,7 @@ struct OutputTransaction *txout_from_proto(POutputTransaction *proto_txout) {
   struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
 
   txout->amount = proto_txout->amount;
-  memcpy(txout->address, proto_txout->address.data, 32);
+  memcpy(txout->address, proto_txout->address.data, ADDRESS_SIZE);
 
   return txout;
 }
@@ -290,7 +295,7 @@ struct OutputTransaction *unspent_txout_from_proto(PUnspentOutputTransaction *pr
   struct OutputTransaction *txout = malloc(sizeof(struct OutputTransaction));
 
   txout->amount = proto_txout->amount;
-  memcpy(txout->address, proto_txout->address.data, 32);
+  memcpy(txout->address, proto_txout->address.data, ADDRESS_SIZE);
 
   return txout;
 }

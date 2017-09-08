@@ -33,4 +33,6 @@ int get_tx_key(uint8_t *buffer, uint8_t *tx_id);
 int get_unspent_tx_key(uint8_t *buffer, uint8_t *tx_id);
 int get_block_key(uint8_t *buffer, uint8_t *block_hash);
 
+uint32_t get_balance_for_address(uint8_t *address);
+
 #endif

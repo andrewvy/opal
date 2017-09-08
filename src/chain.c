@@ -28,8 +28,13 @@ int open_blockchain() {
     return 1;
   }
 
-  insert_block_into_blockchain(&genesis_block);
-  set_current_block_hash(genesis_block.hash);
+  struct Block *test_block = get_block_from_blockchain(genesis_block.hash);
+
+  if (test_block == NULL) {
+    insert_block_into_blockchain(&genesis_block);
+  } else {
+    free_block(test_block);
+  }
 
   IS_BLOCKCHAIN_OPEN = 1;
 
@@ -124,13 +129,13 @@ int insert_block_into_blockchain(struct Block *block) {
     fprintf(stderr, "Could not insert block into blockchain: %s\n", err);
 
     leveldb_free(err);
-    leveldb_free(woptions);
+    leveldb_writeoptions_destroy(woptions);
 
     return 0;
   }
 
   leveldb_free(err);
-  leveldb_free(woptions);
+  leveldb_writeoptions_destroy(woptions);
 
   return 1;
 }
@@ -148,7 +153,7 @@ struct Block *get_block_from_blockchain(uint8_t *block_hash) {
     fprintf(stderr, "Could not retrieve block from blockchain: %s\n", err);
 
     leveldb_free(err);
-    leveldb_free(roptions);
+    leveldb_readoptions_destroy(roptions);
     return NULL;
   }
 
@@ -156,7 +161,7 @@ struct Block *get_block_from_blockchain(uint8_t *block_hash) {
 
   leveldb_free(serialized_block);
   leveldb_free(err);
-  leveldb_free(roptions);
+  leveldb_readoptions_destroy(roptions);
 
   return block;
 }
@@ -175,7 +180,7 @@ int insert_tx_into_index(uint8_t *block_key, struct Transaction *tx) {
   }
 
   leveldb_free(err);
-  leveldb_free(woptions);
+  leveldb_writeoptions_destroy(woptions);
 
   return 0;
 }
@@ -200,7 +205,7 @@ int insert_unspent_tx_into_index(struct Transaction *tx) {
   }
 
   leveldb_free(err);
-  leveldb_free(woptions);
+  leveldb_writeoptions_destroy(woptions);
 
   return 0;
 }
@@ -225,7 +230,7 @@ int insert_proto_unspent_tx_into_index(PUnspentTransaction *tx) {
   }
 
   leveldb_free(err);
-  leveldb_free(woptions);
+  leveldb_writeoptions_destroy(woptions);
 
   return 0;
 }
@@ -252,7 +257,7 @@ PUnspentTransaction *get_unspent_tx_from_index(uint8_t *tx_id) {
 
   leveldb_free(serialized_tx);
   leveldb_free(err);
-  leveldb_free(roptions);
+  leveldb_readoptions_destroy(roptions);
 
   return tx;
 }
@@ -270,12 +275,12 @@ uint8_t *get_block_hash_from_tx_id(uint8_t *tx_id) {
     fprintf(stderr, "Could not retrieve block from tx id\n");
 
     leveldb_free(err);
-    leveldb_free(roptions);
+    leveldb_readoptions_destroy(roptions);
     return NULL;
   }
 
   leveldb_free(err);
-  leveldb_free(roptions);
+  leveldb_readoptions_destroy(roptions);
 
   uint8_t *block_hash = malloc(sizeof(uint8_t) * 32);
   memcpy(block_hash, block_key + 1, 32);
@@ -308,7 +313,12 @@ uint32_t get_block_height() {
   leveldb_iterator_t *iterator = leveldb_create_iterator(db, roptions);
 
   for (leveldb_iter_seek(iterator, "b", 1); leveldb_iter_valid(iterator); leveldb_iter_next(iterator)) {
-    block_height++;
+    size_t key_length;
+    uint8_t *key = (uint8_t *) leveldb_iter_key(iterator, &key_length);
+
+    if (key_length > 0 && key[0] == 'b') {
+      block_height++;
+    }
   }
 
   leveldb_readoptions_destroy(roptions);
@@ -327,13 +337,13 @@ int delete_block_from_blockchain(uint8_t *block_hash) {
 
   if (err != NULL) {
     fprintf(stderr, "Could not delete block from blockchain\n");
-    free(woptions);
+    leveldb_writeoptions_destroy(woptions);
     free(err);
 
     return 0;
   }
 
-  free(woptions);
+  leveldb_writeoptions_destroy(woptions);
   return 1;
 }
 
@@ -347,13 +357,13 @@ int delete_tx_from_index(uint8_t *tx_id) {
 
   if (err != NULL) {
     fprintf(stderr, "Could not delete tx from index\n");
-    free(woptions);
+    leveldb_writeoptions_destroy(woptions);
     free(err);
 
     return 0;
   }
 
-  free(woptions);
+  leveldb_writeoptions_destroy(woptions);
   return 1;
 }
 
@@ -367,13 +377,14 @@ int delete_unspent_tx_from_index(uint8_t *tx_id) {
 
   if (err != NULL) {
     fprintf(stderr, "Could not delete tx from unspent index\n");
-    free(woptions);
+
+    leveldb_writeoptions_destroy(woptions);
     free(err);
 
     return 0;
   }
 
-  free(woptions);
+  leveldb_writeoptions_destroy(woptions);
   return 1;
 }
 
@@ -405,4 +416,41 @@ int get_block_key(uint8_t *buffer, uint8_t *block_hash) {
   memcpy(buffer + 1, block_hash, 32);
 
   return 0;
+}
+
+uint32_t get_balance_for_address(uint8_t *address) {
+  uint32_t balance = 0;
+
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
+  leveldb_iterator_t *iterator = leveldb_create_iterator(db, roptions);
+
+  for (leveldb_iter_seek_to_first(iterator); leveldb_iter_valid(iterator); leveldb_iter_next(iterator)) {
+    size_t key_length;
+    char *key = (char *) leveldb_iter_key(iterator, &key_length);
+
+    if (key_length > 0 && key[0] == 'c') {
+      printf("Found UXTO for address!\n");
+
+      size_t value_length;
+      uint8_t *value = (uint8_t *) leveldb_iter_value(iterator, &value_length);
+
+      PUnspentTransaction *tx = unspent_transaction_from_serialized(value, value_length);
+
+      for (int i = 0; i < tx->n_unspent_txouts; i++) {
+        PUnspentOutputTransaction *unspent_txout = tx->unspent_txouts[i];
+
+        if (unspent_txout->spent == 0) {
+          balance += unspent_txout->amount;
+        }
+      }
+
+      leveldb_free(key);
+      leveldb_free(value);
+    }
+  }
+
+  leveldb_readoptions_destroy(roptions);
+  leveldb_iter_destroy(iterator);
+
+  return balance;
 }

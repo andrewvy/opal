@@ -5,24 +5,53 @@
 #include <leveldb/c.h>
 
 #include "wallet.h"
+#include "chain.h"
+
+static leveldb_t *db;
+static int IS_WALLET_OPEN = 0;
 
 /*
  * open_wallet()
  * Opens a LevelDB instance for the wallet
  */
-leveldb_t *open_wallet(char *err) {
-  leveldb_t *db;
+int open_wallet() {
+  if (IS_WALLET_OPEN) {
+    return 0;
+  }
+
+  char *err = NULL;
   leveldb_options_t *options = leveldb_options_create();
   leveldb_options_set_create_if_missing(options, 1);
+  db = leveldb_open(options, "wallet", &err);
 
-  return leveldb_open(options, "wallet", &err);
+  if (err != NULL) {
+    fprintf(stderr, "Could not open wallet db\n");
+    leveldb_free(err);
+  }
+
+  IS_WALLET_OPEN = 1;
+
+  leveldb_free(err);
+  leveldb_options_destroy(options);
+
+  return 0;
+}
+
+int close_wallet() {
+  if (IS_WALLET_OPEN) {
+    leveldb_close(db);
+    IS_WALLET_OPEN = 0;
+
+    return 0;
+  } else {
+    return 0;
+  }
 }
 
 int new_wallet() {
   // Open DB
 
   char *err = NULL;
-  leveldb_t *db = open_wallet(err);
 
   if (err != NULL) {
     fprintf(stderr, "Could not open wallet\n");
@@ -104,13 +133,6 @@ int new_wallet() {
 
 PWallet *get_wallet() {
   char *err = NULL;
-  leveldb_t *db = open_wallet(err);
-
-  if (err != NULL) {
-    fprintf(stderr, "Could not open wallet database\n");
-    leveldb_free(err);
-  }
-
   size_t buffer_len;
   leveldb_readoptions_t *roptions = leveldb_readoptions_create();
   uint8_t *buffer = (uint8_t *) leveldb_get(db, roptions, "0", 1, &buffer_len, &err);
@@ -129,6 +151,21 @@ int public_key_to_address(uint8_t *address, uint8_t *pk) {
   crypto_hash_sha256(address + 1, pk, crypto_sign_PUBLICKEYBYTES);
 
   return 0;
+}
+
+int valid_address(uint8_t *address) {
+  uint8_t address_id = address[0];
+
+  switch(address_id) {
+    case PROD_NET_ADDRESS_ID:
+    case TEST_NET_ADDRESS_ID: {
+      return 1;
+      break;
+    }
+    default: {
+      return 0;
+    }
+  }
 }
 
 uint8_t get_address_id(uint8_t *address) {

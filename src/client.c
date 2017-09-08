@@ -18,7 +18,10 @@ static void handle_get_wallet(const PWallet *wallet, void *closure_data) {
     sprintf(&public_address[i*2], "%02x", (int) wallet->address.data[i]);
   }
 
-  printf("public_address: %s\n", public_address);
+  long double real_balance = ((long double) wallet->balance) / 100;
+
+  printf("Public Address: %s\n", public_address);
+  printf("Balance: %Lf\n", real_balance);
 
   *(protobuf_c_boolean *) closure_data = 1;
 }

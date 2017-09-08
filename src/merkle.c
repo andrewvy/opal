@@ -9,7 +9,7 @@
  * of hashes the hash buffer contains.
  */
 struct MerkleTree *construct_merkle_tree_from_leaves(uint8_t *hashes, uint32_t num_of_hashes) {
-  if (num_of_hashes <= 1) {
+  if (num_of_hashes < 1) {
     return NULL;
   }
 
