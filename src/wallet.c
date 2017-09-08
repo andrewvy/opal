@@ -2,78 +2,50 @@
 #include <string.h>
 #include <sodium.h>
 #include <stdlib.h>
-#include <leveldb/c.h>
+#include <rocksdb/c.h>
 
 #include "wallet.h"
 #include "chain.h"
-
-static leveldb_t *db;
-static int IS_WALLET_OPEN = 0;
 
 /*
  * open_wallet()
  * Opens a LevelDB instance for the wallet
  */
-int open_wallet() {
-  if (IS_WALLET_OPEN) {
-    return 0;
-  }
+rocksdb_t *open_wallet(char *err) {
+  rocksdb_t *db;
+  rocksdb_options_t *options = rocksdb_options_create();
+  rocksdb_options_set_create_if_missing(options, 1);
 
-  char *err = NULL;
-  leveldb_options_t *options = leveldb_options_create();
-  leveldb_options_set_create_if_missing(options, 1);
-  db = leveldb_open(options, "wallet", &err);
-
-  if (err != NULL) {
-    fprintf(stderr, "Could not open wallet db\n");
-    leveldb_free(err);
-  }
-
-  IS_WALLET_OPEN = 1;
-
-  leveldb_free(err);
-  leveldb_options_destroy(options);
-
-  return 0;
-}
-
-int close_wallet() {
-  if (IS_WALLET_OPEN) {
-    leveldb_close(db);
-    IS_WALLET_OPEN = 0;
-
-    return 0;
-  } else {
-    return 0;
-  }
+  return rocksdb_open(options, "wallet", &err);
 }
 
 int new_wallet() {
   // Open DB
 
   char *err = NULL;
+  rocksdb_t *db = open_wallet(err);
 
   if (err != NULL) {
     fprintf(stderr, "Could not open wallet\n");
     return 1;
   }
 
-  leveldb_free(err);
+  rocksdb_free(err);
   err = NULL;
 
   // ----
 
   size_t read_len;
-  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
-  char *initialized = leveldb_get(db, roptions, "0", 1, &read_len, &err);
+  rocksdb_readoptions_t *roptions = rocksdb_readoptions_create();
+  char *initialized = rocksdb_get(db, roptions, "0", 1, &read_len, &err);
 
   if (initialized != NULL) {
-    leveldb_free(initialized);
+    rocksdb_free(initialized);
     fprintf(stderr, "Already initialized.\n");
     return 1;
   }
 
-  leveldb_free(err);
+  rocksdb_free(err);
 
   // ----
 
@@ -88,7 +60,7 @@ int new_wallet() {
 
   // ---
 
-  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  rocksdb_writeoptions_t *woptions = rocksdb_writeoptions_create();
 
   PWallet *wallet = malloc(sizeof(PWallet));
   pwallet__init(wallet);
@@ -112,7 +84,7 @@ int new_wallet() {
 
   pwallet__pack(wallet, buffer);
 
-  leveldb_put(db, woptions, "0", 1, (char *) buffer, buffer_len, &err);
+  rocksdb_put(db, woptions, "0", 1, (char *) buffer, buffer_len, &err);
 
   pwallet__free_unpacked(wallet, NULL);
   free(buffer);
@@ -122,25 +94,32 @@ int new_wallet() {
     return 1;
   }
 
-  leveldb_free(err);
+  rocksdb_free(err);
   err = NULL;
 
   // Close DB
-  leveldb_close(db);
+  rocksdb_close(db);
 
   return 0;
 }
 
 PWallet *get_wallet() {
   char *err = NULL;
+  rocksdb_t *db = open_wallet(err);
+
+  if (err != NULL) {
+    fprintf(stderr, "Could not open wallet database\n");
+    rocksdb_free(err);
+  }
+
   size_t buffer_len;
-  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
-  uint8_t *buffer = (uint8_t *) leveldb_get(db, roptions, "0", 1, &buffer_len, &err);
+  rocksdb_readoptions_t *roptions = rocksdb_readoptions_create();
+  uint8_t *buffer = (uint8_t *) rocksdb_get(db, roptions, "0", 1, &buffer_len, &err);
 
   PWallet *proto_wallet = pwallet__unpack(NULL, buffer_len, buffer);
 
-  leveldb_free(roptions);
-  leveldb_close(db);
+  rocksdb_free(roptions);
+  rocksdb_close(db);
 
   return proto_wallet;
 }

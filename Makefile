@@ -17,14 +17,14 @@ TEST_OBJECTS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/$(TESTDIR)/%,$(TEST_SOURCES:
 CC_LIB := -I/usr/local/include
 CFLAGS = -g $(CC_LIB) $(shell pkg-config --cflags 'libprotobuf-c >= 1.0.0')
 
-LIB := -L/usr/local/lib -lcrypto -Bstatic -lsodium -lleveldb $(shell pkg-config --libs 'libprotobuf-c >= 1.0.0') -lprotobuf-c-rpc
+LIB := -L/usr/local/lib -lcrypto -Bstatic -lsodium -lrocksdb $(shell pkg-config --libs 'libprotobuf-c >= 1.0.0') -lprotobuf-c-rpc
 INC := -I include
 
 all: opal
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
-	@echo " $(CC) $(CFLAGS) $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@echo " $(CC) $(CFLAGS) -O2 $(INC) -c -o $@ $<"; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 libsodium:
 	@mkdir -p $(DEPSDIR)

@@ -51,7 +51,6 @@ void make_hash(char *digest, unsigned char *string) {
 
 void perform_shutdown(int test) {
   close_blockchain();
-  close_wallet();
   exit(1);
 }
 
@@ -105,14 +104,11 @@ int main(int argc, char **argv) {
         break;
       }
       case CMD_NEW_WALLET: {
-        open_wallet();
         new_wallet();
-        close_wallet();
         break;
       }
       case CMD_SERVER: {
         init_blockchain();
-        open_wallet();
         start_server();
         break;
       }

@@ -7,7 +7,7 @@ Dependencies
 ------------
 
 - libsodium (https://github.com/jedisct1/libsodium)
-- leveldb (https://github.com/google/leveldb)
+- rocksdb (https://github.com/facebook/rocksdb)
 - greatest (https://github.com/silentbicycle/greatest)
 - protobuf-c (https://github.com/protobuf-c/protobuf-c)
 
