@@ -54,13 +54,6 @@ struct Block *compute_next_block(uint8_t *prev_block_hash) {
   tx->txins[0] = txin;
   compute_self_tx_id(tx);
 
-  char tx_digest[(32 * 2) + 1];
-  for (int i = 0; i < 32; i++) {
-    sprintf(&tx_digest[i*2], "%02x", (unsigned int) tx->id);
-  }
-
-  printf("Working on TX ID: %s\n", tx_digest);
-
   struct Block *block = make_block();
   block->transaction_count = 1;
   block->transactions = malloc(sizeof(struct Transaction *) * 1);

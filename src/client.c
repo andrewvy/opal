@@ -18,7 +18,7 @@ static void handle_get_wallet(const PWallet *wallet, void *closure_data) {
     sprintf(&public_address[i*2], "%02x", (int) wallet->address.data[i]);
   }
 
-  long double real_balance = ((long double) wallet->balance) / 100;
+  long double real_balance = ((long double) wallet->balance) / OPALITES_PER_OPAL;
 
   printf("Public Address: %s\n", public_address);
   printf("Balance: %Lf\n", real_balance);

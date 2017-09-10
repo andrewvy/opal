@@ -424,7 +424,7 @@ uint32_t get_balance_for_address(uint8_t *address) {
   rocksdb_readoptions_t *roptions = rocksdb_readoptions_create();
   rocksdb_iterator_t *iterator = rocksdb_create_iterator(db, roptions);
 
-  for (rocksdb_iter_seek_to_first(iterator); rocksdb_iter_valid(iterator); rocksdb_iter_next(iterator)) {
+  for (rocksdb_iter_seek(iterator, "c", 1); rocksdb_iter_valid(iterator); rocksdb_iter_next(iterator)) {
     size_t key_length;
     char *key = (char *) rocksdb_iter_key(iterator, &key_length);
 
